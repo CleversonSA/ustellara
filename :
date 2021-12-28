@@ -1,0 +1,33 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int main(char args[])
+{
+  int tecla = 0;
+  char freq[10] = "5.940M";
+  char cmd[255] = "{rtl_fm -M am -f ";
+  char cmd2[255] = " -E direct2 -l0 -s 16k -g 50| aplay -r 16000 -f S16_LE -t raw } &> /dev/null & ";
+  char cmd3[525] = "";
+
+	  
+  while (1)
+  {
+    /* system("clear"); */
+    printf("Entre com a frequencia: ");
+    scanf("%s", &freq);
+
+    strcat(cmd, freq);
+    strcat(cmd, cmd2);
+
+    printf("%s\n\n", cmd);
+    
+    system(cmd);
+
+    printf("Pressione uma tecla para sair");
+    tecla = getchar();
+    system("killall -9 rtl_fm");
+  }
+
+  exit(0); 
+}
