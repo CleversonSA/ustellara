@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <curses.h>
 #include <string.h>
+#include <time.h>
 
 /****************************************
  * Structures
@@ -36,7 +37,8 @@ void set_digit(LCDDisplay *ldig, int ndig, WINDOW *dig);
 #define DIGIT_STR_LINE "***"
 #define DIGIT_STR_COL  "I"
 #define DIGIT_STR_BG   "....."
-
+#define DIGIT_COLOR_ON  1
+#define DIGIT_COLOR_OFF 2
 
 /***************************************
  * Main
@@ -50,7 +52,16 @@ int main()
   LCDDisplay *lcd_display = create_lcd(mainwin, 3, 3);
 
 
-  display_lcd(lcd_display, 4.625);
+  float f = 4.625;
+  for (;f < 5; f += .005)
+  {  
+    display_lcd(lcd_display, f);
+    clock_t start_time = clock();
+    int milli = 1000 * 0.5 * (CLOCKS_PER_SEC/1000);
+    while(clock() < start_time + milli)
+	    ;
+  }
+
   getch();
   display_lcd(lcd_display, 27.455);
   getch();
@@ -84,6 +95,7 @@ void display_digit(LCDDisplay *ldig, int ndig, int dig)
 
   win = get_digit(ldig, ndig);
 
+  wattron(win, COLOR_PAIR(DIGIT_COLOR_ON));
   if(digpart[dig][0])
     mvwprintw(win, 0, 1, DIGIT_STR_LINE);
   if(digpart[dig][1])
@@ -110,6 +122,8 @@ void display_digit(LCDDisplay *ldig, int ndig, int dig)
   }
   if(digpart[dig][6])
     mvwprintw(win, 6, 1, DIGIT_STR_LINE);
+  
+  wattroff(win, COLOR_PAIR(DIGIT_COLOR_ON));
 
   wrefresh(win);
 }
@@ -122,6 +136,11 @@ LCDDisplay * create_lcd(WINDOW *main, int y, int x)
    * a crime dinamically alloc it */
 
   LCDDisplay *lcd = malloc(sizeof(LCDDisplay));
+
+  /* Colors */
+  start_color();
+  init_pair(DIGIT_COLOR_ON, COLOR_CYAN, COLOR_BLACK);
+  init_pair(DIGIT_COLOR_OFF, COLOR_BLUE, COLOR_BLACK);
 
   int i = 0;
 
@@ -164,7 +183,6 @@ void display_lcd(LCDDisplay *ldisp, float number)
     if((i < 2 && dig > 0) ||
         i >=2)
       display_digit(ldisp, iddig,dig);
-   
 
     iddig--;
   }
@@ -176,11 +194,14 @@ void display_dig_off(WINDOW *digit)
 {
   int i = 0;
 
+  wattron(digit, COLOR_PAIR(DIGIT_COLOR_OFF));
   for(i=0; i< 7; i++)
   { 
     mvwprintw(digit, i, 0, DIGIT_STR_BG);
   }
+  wattroff(digit, COLOR_PAIR(DIGIT_COLOR_OFF));
   wrefresh(digit);
+
 }
 
 WINDOW * get_digit(LCDDisplay *ldig, int ndig)
