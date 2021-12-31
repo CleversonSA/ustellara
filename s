@@ -1,0 +1,4 @@
+#! /bin/sh
+
+stty sane
+
