@@ -3,10 +3,12 @@
 rm -f err.log 
 
 (
-
-gcc ./src/libdigit.c -o ./build/libdigit.so -lncurses
-gcc ./src/main.c -o ./build/ustellara
-
+ gcc -o ./build/ustellara \
+   ./src/libreceivemode.c \
+   ./src/libdigit.c \
+   ./src/frontend.c \
+   ./src/main.c \
+   -lncurses
 ) 2>err.log
 
 vim err.log

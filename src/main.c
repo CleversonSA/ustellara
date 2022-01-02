@@ -13,12 +13,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "frontend.h" 
+#include <time.h>
 
 /* =======================================
  * Prototypes
  * =======================================*/
-char *build_rtl_command (char *buffer, float freq, char *mod, int bw, int sr);
-void knob_turner(float *freq, char *mod, int *bw, int *sr);
+char *build_rtl_command (char *buffer, ReceiverPanel *rp);
+void knob_turner(ReceiverPanel *rp);
+void increase_frequency(ReceiverPanel *rp);
+void decrease_frequency(ReceiverPanel *rp);
+void init_panel(ReceiverPanel *rp);
+void call_rtl_fm(ReceiverPanel *rp);
 
 /* =======================================
  * Globals
@@ -41,6 +47,14 @@ void knob_turner(float *freq, char *mod, int *bw, int *sr);
 #define MOD_LSB_SR 8000
 #define DIRECT_SMP " -E direct2 "
 #define DIRECT_SMP_MAX_FREQ 24.0
+#define FREQ_DEFAULT_STEP_WBFM .1
+#define FREQ_DEFAULT_STEP_FM   .025
+#define FREQ_DEFAULT_STEP_AM   .010
+#define FREQ_DEFAULT_STEP_USB  .005
+#define FREQ_DEFAULT_STEP_LSB  .005
+#define FREQ_MAX	   2400.000
+#define FREQ_DEFAULT	   4.625
+#define MODE_DEFAULT       RECEIVE_MODE_USB
 
 
 /* =======================================
@@ -48,27 +62,64 @@ void knob_turner(float *freq, char *mod, int *bw, int *sr);
  * =======================================*/
 int main(char args[])
 {
-  float freq = 0.0;
-  int bw = 0;
-  int sr = 0;
-  char mod[6] = "",
-       cmd[255] = "",
-       cmd3[255] = "";
+  int c = 0,
+      idmode = 0,
+      rmodes[] = {RECEIVE_MODE_AM,
+      		  RECEIVE_MODE_FM,
+      		  RECEIVE_MODE_WBFM,
+      		  RECEIVE_MODE_LSB,
+      		  RECEIVE_MODE_USB};
 
-	  
-  while (1)
+  WINDOW *mainwin=initscr();
+  cbreak();
+  noecho();
+
+  ReceiverPanel *panel = create_receiver_panel(mainwin, 0, 0);
+  
+  init_panel(panel);
+  call_rtl_fm(panel);
+ 
+  keypad(mainwin, TRUE);
+
+  while ((c = getch()) != KEY_F(1))
   {
-    strcpy(cmd3, cmd);
+    switch(c)
+    {
+      case KEY_UP:
+	  increase_frequency(panel);
+      	  call_rtl_fm(panel);
+	  break;
 
-    knob_turner(&freq, mod, &bw, &sr);
 
-    build_rtl_command(cmd3, freq, mod, bw, sr);
-    /* printf("%s", cmd3); */
+      case KEY_DOWN:
+	  decrease_frequency(panel);
+      	  call_rtl_fm(panel);
+	  break;
 
-    system("killall -9 rtl_fm  > /dev/null 2>&1");
-    system(cmd3);
+      case KEY_LEFT:
+	  idmode--;
+	  if(idmode < 0) idmode=0;
+	  panel->receive_mode=rmodes[idmode];
+	  call_rtl_fm(panel);
+	  break;
 
-    while((getchar()) != '\n');
+    
+      case KEY_RIGHT:
+	  idmode++;
+	  if(idmode > ((int)sizeof(rmodes)/(int)sizeof(int))-1) idmode--;
+	  panel->receive_mode=rmodes[idmode];
+	  call_rtl_fm(panel);
+	  break;
+
+      case 'f':
+      case 'F':
+	  goto_frequency(panel);
+      	  call_rtl_fm(panel);
+	  break;
+
+    }
+
+
   }
 
   exit(0); 
@@ -77,26 +128,26 @@ int main(char args[])
 /*===========================================
  * Functions
  *==========================================*/
-char* build_rtl_command (char *buffer, float freq, char *mod, int bw, int sr)
+char* build_rtl_command (char *buffer, ReceiverPanel *rp)
 {
   char sub_buffer[16];
 
   strcat(buffer,"( ");
   strcat(buffer,RTL_FM_CMD);
   strcat(buffer,"-M");
-  strcat(buffer,mod);
-  snprintf(sub_buffer,16, "-f %.3fM ", freq);
+  strcat(buffer,rp->rtl_mod);
+  snprintf(sub_buffer,16, "-f %.3fM ", rp->vfo);
   strcat(buffer, sub_buffer);
   
   /* Direct sample not needed for 24Mhz or higher */
-  if(freq < DIRECT_SMP_MAX_FREQ )
+  if(rp->vfo < DIRECT_SMP_MAX_FREQ )
     strcat(buffer, DIRECT_SMP);
 
   strcat(buffer, "-l0 ");
-  snprintf(sub_buffer, 16,"-s %d ",bw);
+  snprintf(sub_buffer, 16,"-s %d ",rp->rtl_bw);
   strcat(buffer, sub_buffer);
   strcat(buffer, "-g 50 | aplay ");
-  snprintf(sub_buffer, 16,"-r %d ",sr);
+  snprintf(sub_buffer, 16,"-r %d ",rp->rtl_sr);
   strcat(buffer, sub_buffer);
   strcat(buffer, "-f S16_LE -t raw ");
   strcat(buffer, ") > /dev/null 2>&1 &");
@@ -105,74 +156,131 @@ char* build_rtl_command (char *buffer, float freq, char *mod, int bw, int sr)
 }
  
 
-void knob_turner(float *freq, char *mod, int *bw, int *sr)
+void knob_turner(ReceiverPanel *rp)
 {
-  int mode = 1;
-  int bwaux = *bw;
-  int sraux = *sr;
-  float freqaux = *freq;
-  char modaux[10];
+  char mod[10] = {0};
 
-  system("clear");
-  printf("Entre com a frequencia (MHz): ");
-  scanf("%f",&freqaux);
-  while((getchar()) != '\n');
-
-  do
+  switch(rp->receive_mode)
   {
-    printf("\nModulacao:\n");
-    printf("===================\n");
-    printf(" 1 - AM (Default) \n");
-    printf(" 2 - FM (Comercial) \n");
-    printf(" 3 - FM (Radio Amador) \n");
-    printf(" 4 - Banda lateral superior (USB) \n");
-    printf(" 5 - Banda lateral inferior (LSB) \n");
-    printf("====================\n");
-    printf("Modo: ");
-    scanf("%d", &mode);
-
-    if(mode < 1 && mode >5)
-       printf("\n***** MODO INVALIDO *****");
-  
-  }
-  while(mode < 1 && mode > 5);
-  
-
-  switch(mode)
-  {
-     case (2):
+     case (RECEIVE_MODE_WBFM):
       strcpy(mod, MOD_FM);
-      bwaux = MOD_FM_BW;
-      sraux = MOD_FM_SR;
+      rp->rtl_mod = strdup(mod);
+      rp->rtl_bw = MOD_FM_BW;
+      rp->rtl_sr = MOD_FM_SR;
+      rp->receive_mode = RECEIVE_MODE_WBFM;
       break;
 
-     case (3):
+     case (RECEIVE_MODE_FM):
       strcpy(mod, MOD_NFM);
-      bwaux = MOD_NFM_BW;
-      sraux = MOD_NFM_SR;
+      rp->rtl_mod = strdup(mod);
+      rp->rtl_bw = MOD_NFM_BW;
+      rp->rtl_sr = MOD_NFM_SR;
+      rp->receive_mode = RECEIVE_MODE_FM;
       break;
 
-     case (4):
+     case (RECEIVE_MODE_USB):
       strcpy(mod,MOD_USB);
-      bwaux = MOD_USB_BW;
-      sraux = MOD_USB_SR;
+      rp->rtl_mod = strdup(mod);
+      rp->rtl_bw = MOD_USB_BW;
+      rp->rtl_sr = MOD_USB_SR;
+      rp->receive_mode = RECEIVE_MODE_USB;
       break;
 
-     case (5):
+     case (RECEIVE_MODE_LSB):
       strcpy(mod, MOD_LSB);
-      bwaux = MOD_LSB_BW;
-      sraux = MOD_LSB_SR;
+      rp->rtl_mod = strdup(mod);
+      rp->rtl_bw = MOD_LSB_BW;
+      rp->rtl_sr = MOD_LSB_SR;
+      rp->receive_mode = RECEIVE_MODE_LSB;
       break;
 
      default:
       strcpy(mod, MOD_AM);
-      bwaux = MOD_AM_BW;
-      sraux = MOD_AM_SR;
+      rp->rtl_mod = strdup(mod);
+      rp->rtl_bw = MOD_AM_BW;
+      rp->rtl_sr = MOD_AM_SR;
+      rp->receive_mode = RECEIVE_MODE_AM;
   }
 
-  *bw = bwaux;
-  *freq = freqaux;
-  *sr = sraux;
+  change_receive_mode(rp, rp->receive_mode);
+  change_frequency(rp, rp->vfo);
+  
 }
 
+void increase_frequency(ReceiverPanel *rp)
+{
+   switch(rp->receive_mode)
+   {
+     case(RECEIVE_MODE_WBFM):
+	rp->vfo += FREQ_DEFAULT_STEP_WBFM;
+        break;
+     case(RECEIVE_MODE_FM):
+	rp->vfo += FREQ_DEFAULT_STEP_FM;
+	break;
+     case(RECEIVE_MODE_USB):
+	rp->vfo += FREQ_DEFAULT_STEP_USB;
+	break;
+     case(RECEIVE_MODE_LSB):
+	rp->vfo += FREQ_DEFAULT_STEP_LSB;
+	break;
+     default:
+	rp->vfo += FREQ_DEFAULT_STEP_AM;	
+   }
 
+   if (rp->vfo <= 0.0) rp->vfo = 0.0;
+   if (rp->vfo > FREQ_MAX) rp->vfo = FREQ_MAX;
+
+}
+
+void decrease_frequency(ReceiverPanel *rp)
+{
+   switch(rp->receive_mode)
+   {
+     case(RECEIVE_MODE_WBFM):
+	rp->vfo -= FREQ_DEFAULT_STEP_WBFM;
+        break;
+     case(RECEIVE_MODE_FM):
+	rp->vfo -= FREQ_DEFAULT_STEP_FM;
+	break;
+     case(RECEIVE_MODE_USB):
+	rp->vfo -= FREQ_DEFAULT_STEP_USB;
+	break;
+     case(RECEIVE_MODE_LSB):
+	rp->vfo -= FREQ_DEFAULT_STEP_LSB;
+	break;
+     default:
+	rp->vfo -= FREQ_DEFAULT_STEP_AM;	
+   }
+
+   if (rp->vfo <= 0.0) rp->vfo = 0.0;
+   if (rp->vfo > FREQ_MAX) rp->vfo = FREQ_MAX;
+
+}
+
+void init_panel(ReceiverPanel *rp)
+{
+  rp->vfo = FREQ_DEFAULT;
+  rp->receive_mode = MODE_DEFAULT;
+  knob_turner(rp);
+
+}
+
+void call_rtl_fm(ReceiverPanel *rp) 
+{
+  
+  char cmd[255] = { 0 }, 
+       cmd3[255] = { 0 };
+
+  /* PTBR: Evita o dedinho nervoso */
+  strcpy(cmd3, cmd);
+  clock_t start_time = clock();
+  int milli = 1000 * 0.5 * (CLOCKS_PER_SEC/1000);
+  while(clock() < start_time + milli)
+	    ;
+  knob_turner(rp);
+  system("killall -9 rtl_fm  > /dev/null 2>&1");
+  system("killall -9 aplay > /dev/null 2>&1");
+  build_rtl_command(cmd3, rp);
+  system(cmd3);
+  
+}

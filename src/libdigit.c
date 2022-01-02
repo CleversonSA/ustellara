@@ -3,11 +3,12 @@
 #include <curses.h>
 #include <string.h>
 #include <time.h>
+#include "libdigit.h"
 
 /****************************************
  * Structures
  * *************************************/
-typedef struct LCDDisplaySt
+/*typedef struct LCDDisplaySt
 {
   WINDOW *d1;
   WINDOW *d2;
@@ -17,37 +18,39 @@ typedef struct LCDDisplaySt
   WINDOW *d6;
   WINDOW *d7;
 } LCDDisplay;
-
+*/
 
 /****************************************
  * Prototypes
  * *************************************/
-void display_digit(LCDDisplay *ldig, int ndig, int dig);
+/*void display_digit(LCDDisplay *ldig, int ndig, int dig);
 LCDDisplay * create_lcd(WINDOW *main, int y, int x);
 void display_lcd(LCDDisplay *ldisp, float number);
 void display_dig_off(WINDOW *digit);
 WINDOW * get_digit(LCDDisplay *ldig, int ndig);
 void set_digit(LCDDisplay *ldig, int ndig, WINDOW *dig);
+*/
 
 /***************************************
  * Globals
  * *************************************/
-#define MAX_DIGITS 7
+/*#define MAX_DIGITS 7
 #define DIGIT_SIZE 6
 #define DIGIT_STR_LINE "***"
 #define DIGIT_STR_COL  "I"
 #define DIGIT_STR_BG   "....."
 #define DIGIT_COLOR_ON  1
 #define DIGIT_COLOR_OFF 2
+*/
 
 /***************************************
  * Main
  ***************************************/
-int main()
+/*int main()
 {
   WINDOW *mainwin=initscr();
   cbreak();
-  /*  noecho(); */
+  noecho();
   
   LCDDisplay *lcd_display = create_lcd(mainwin, 3, 3);
 
@@ -69,7 +72,7 @@ int main()
   refresh();
   endwin();
   exit(0);
-}
+}*/
 
 /***************************************
  * Functions
@@ -95,7 +98,7 @@ void display_digit(LCDDisplay *ldig, int ndig, int dig)
 
   win = get_digit(ldig, ndig);
 
-  wattron(win, COLOR_PAIR(DIGIT_COLOR_ON));
+  wattron(win, COLOR_PAIR(DIGIT_COLOR_ON) | A_BOLD);
   if(digpart[dig][0])
     mvwprintw(win, 0, 1, DIGIT_STR_LINE);
   if(digpart[dig][1])
@@ -123,7 +126,7 @@ void display_digit(LCDDisplay *ldig, int ndig, int dig)
   if(digpart[dig][6])
     mvwprintw(win, 6, 1, DIGIT_STR_LINE);
   
-  wattroff(win, COLOR_PAIR(DIGIT_COLOR_ON));
+  wattroff(win, COLOR_PAIR(DIGIT_COLOR_ON) | A_BOLD);
 
   wrefresh(win);
 }
@@ -140,7 +143,7 @@ LCDDisplay * create_lcd(WINDOW *main, int y, int x)
   /* Colors */
   start_color();
   init_pair(DIGIT_COLOR_ON, COLOR_CYAN, COLOR_BLACK);
-  init_pair(DIGIT_COLOR_OFF, COLOR_BLUE, COLOR_BLACK);
+  init_pair(DIGIT_COLOR_OFF, COLOR_CYAN, COLOR_BLACK);
 
   int i = 0;
 
@@ -148,7 +151,7 @@ LCDDisplay * create_lcd(WINDOW *main, int y, int x)
   {
      WINDOW * digit = subwin(main,7,5, y, x + (DIGIT_SIZE * i));
      set_digit(lcd, i+1, digit);
-     display_digit(lcd, i+1, 0);
+     display_dig_off(get_digit(lcd, i+1));
   }
 
   return lcd;
