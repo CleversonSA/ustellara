@@ -7,37 +7,14 @@
 /****************************************
  * Structures
  * *************************************/
-/*typedef struct LCDReceiveModeSt
-{
-  WINDOW *am;
-  WINDOW *wbfm;
-  WINDOW *fm;
-  WINDOW *usb;
-  WINDOW *lsb;
-} LCDReceiveMode;
-*/
 
 /****************************************
  * Prototypes
  * *************************************/
-/*void display_mode(LCDReceiveMode *lmode, int mode);
-LCDReceiveMode * create_lcd_receive(WINDOW *main, int y, int x);
-void display_lcd_receive_off(LCDReceiveMode *lmode);
-WINDOW * get_receive_mode(LCDReceiveMode *lmode, int mode);
-void set_receive_mode(LCDReceiveMode *lmode, int mode, WINDOW *wmode);
-*/
 
 /***************************************
  * Globals
- * *************************************/
-/*#define RECEIVE_MODE_AM   1000
-#define RECEIVE_MODE_WBFM 1001
-#define RECEIVE_MODE_FM   1002
-#define RECEIVE_MODE_USB  1003
-#define RECEIVE_MODE_LSB  1004
-#define RECEIVE_COLOR_ON  3
-#define RECEIVE_COLOR_OFF 4
-*/
+ **************************************/
 
 /***************************************
  * Main
@@ -67,17 +44,18 @@ void set_receive_mode(LCDReceiveMode *lmode, int mode, WINDOW *wmode);
  * *************************************/
 void display_mode(LCDReceiveMode *lmode, int mode)
 {
+  
   display_lcd_receive_off(lmode);
 
   WINDOW *win = get_receive_mode(lmode, mode);
 
   wattron(win, COLOR_PAIR(RECEIVE_COLOR_ON) | A_BOLD);
   switch(mode) {
-    case(RECEIVE_MODE_AM): mvwprintw(win,0,0,"AM"); break;
+    case(RECEIVE_MODE_AM): mvwprintw(win,0,0," AM "); break;
     case(RECEIVE_MODE_WBFM): mvwprintw(win,0,0,"WBFM"); break;
-    case(RECEIVE_MODE_FM): mvwprintw(win,0,0,"FM"); break;
-    case(RECEIVE_MODE_USB): mvwprintw(win,0,0,"USB"); break;
-    case(RECEIVE_MODE_LSB): mvwprintw(win,0,0,"LSB"); break;
+    case(RECEIVE_MODE_FM): mvwprintw(win,0,0," FM "); break;
+    case(RECEIVE_MODE_USB): mvwprintw(win,0,0,"USB "); break;
+    case(RECEIVE_MODE_LSB): mvwprintw(win,0,0,"LSB "); break;
   }  
   
   wattroff(win, COLOR_PAIR(RECEIVE_COLOR_ON) | A_BOLD);
@@ -99,11 +77,11 @@ LCDReceiveMode * create_lcd_receive(WINDOW *main, int y, int x)
   init_pair(RECEIVE_COLOR_ON, COLOR_CYAN, COLOR_BLACK);
   init_pair(RECEIVE_COLOR_OFF, COLOR_CYAN, COLOR_BLACK);
 
-  set_receive_mode(lcd, RECEIVE_MODE_AM, subwin(main,1,4, y, x));
-  set_receive_mode(lcd, RECEIVE_MODE_FM, subwin(main,1,4, y, x + 5));
-  set_receive_mode(lcd, RECEIVE_MODE_WBFM, subwin(main,1,4,y, x + 10));
-  set_receive_mode(lcd, RECEIVE_MODE_LSB, subwin(main,1,4,y, x + 15));
-  set_receive_mode(lcd, RECEIVE_MODE_USB, subwin(main,1,4,y, x + 20));
+  set_receive_mode(lcd, RECEIVE_MODE_AM, subwin(main,1,4, y, x + 5));
+  set_receive_mode(lcd, RECEIVE_MODE_FM, subwin(main,1,4, y, x + 10));
+  set_receive_mode(lcd, RECEIVE_MODE_WBFM, subwin(main,1,4,y, x + 15));
+  set_receive_mode(lcd, RECEIVE_MODE_LSB, subwin(main,1,4,y, x + 20));
+  set_receive_mode(lcd, RECEIVE_MODE_USB, subwin(main,1,4,y, x + 25));
 
   display_lcd_receive_off(lcd);
 
@@ -117,7 +95,7 @@ void display_lcd_receive_off(LCDReceiveMode *lmode)
   
   WINDOW *wmode = get_receive_mode(lmode, RECEIVE_MODE_AM);
   wattron(wmode, COLOR_PAIR(RECEIVE_COLOR_OFF));
-  mvwprintw(wmode,0,0,"AM");
+  mvwprintw(wmode,0,0," AM ");
   wattroff(wmode, COLOR_PAIR(RECEIVE_COLOR_OFF));
   wrefresh(wmode);
 
@@ -128,18 +106,18 @@ void display_lcd_receive_off(LCDReceiveMode *lmode)
   wrefresh(wmode);
 
   wmode = get_receive_mode(lmode, RECEIVE_MODE_FM);
-  wattron(wmode, COLOR_PAIR(RECEIVE_COLOR_OFF));  mvwprintw(wmode,0,0,"FM");
+  wattron(wmode, COLOR_PAIR(RECEIVE_COLOR_OFF));  mvwprintw(wmode,0,0," FM ");
   wattroff(wmode, COLOR_PAIR(RECEIVE_COLOR_OFF));
   wrefresh(wmode);
 
   wmode = get_receive_mode(lmode, RECEIVE_MODE_USB);
-  wattron(wmode, COLOR_PAIR(RECEIVE_COLOR_OFF));  mvwprintw(wmode,0,0,"USB");
+  wattron(wmode, COLOR_PAIR(RECEIVE_COLOR_OFF));  mvwprintw(wmode,0,0,"USB ");
   wattroff(wmode, COLOR_PAIR(RECEIVE_COLOR_OFF));
   wrefresh(wmode);
 
   wmode = get_receive_mode(lmode, RECEIVE_MODE_LSB);
   wattron(wmode, COLOR_PAIR(RECEIVE_COLOR_OFF));
-  mvwprintw(wmode,0,0,"LSB");
+  mvwprintw(wmode,0,0,"LSB ");
   wattroff(wmode, COLOR_PAIR(RECEIVE_COLOR_OFF));
   wrefresh(wmode);
 

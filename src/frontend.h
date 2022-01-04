@@ -21,6 +21,12 @@ typedef struct ReceiverPanelSt
   int            yinput;
   int            maxx;
   int            maxy;
+  int		 sqlevel;
+  float current_freq_step;
+  int	custom_freq_step;
+  int   volume;
+
+
 } ReceiverPanel;
 
 
@@ -35,5 +41,6 @@ ReceiverPanel *create_receiver_panel(WINDOW *main, int y, int x);
 void change_receive_mode(ReceiverPanel *panel, int mode);
 void change_frequency(ReceiverPanel *panel, float freq);
 void goto_frequency(ReceiverPanel *panel);
+void set_squelch_level(ReceiverPanel *panel);
 
 #endif /* FRONTEND_H_ */

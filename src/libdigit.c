@@ -8,40 +8,14 @@
 /****************************************
  * Structures
  * *************************************/
-/*typedef struct LCDDisplaySt
-{
-  WINDOW *d1;
-  WINDOW *d2;
-  WINDOW *d3;
-  WINDOW *d4;
-  WINDOW *d5;
-  WINDOW *d6;
-  WINDOW *d7;
-} LCDDisplay;
-*/
 
 /****************************************
  * Prototypes
  * *************************************/
-/*void display_digit(LCDDisplay *ldig, int ndig, int dig);
-LCDDisplay * create_lcd(WINDOW *main, int y, int x);
-void display_lcd(LCDDisplay *ldisp, float number);
-void display_dig_off(WINDOW *digit);
-WINDOW * get_digit(LCDDisplay *ldig, int ndig);
-void set_digit(LCDDisplay *ldig, int ndig, WINDOW *dig);
-*/
 
 /***************************************
  * Globals
  * *************************************/
-/*#define MAX_DIGITS 7
-#define DIGIT_SIZE 6
-#define DIGIT_STR_LINE "***"
-#define DIGIT_STR_COL  "I"
-#define DIGIT_STR_BG   "....."
-#define DIGIT_COLOR_ON  1
-#define DIGIT_COLOR_OFF 2
-*/
 
 /***************************************
  * Main
@@ -149,7 +123,9 @@ LCDDisplay * create_lcd(WINDOW *main, int y, int x)
 
   for(i=0; i < MAX_DIGITS; i++)
   {
+
      WINDOW * digit = subwin(main,7,5, y, x + (DIGIT_SIZE * i));
+ 
      set_digit(lcd, i+1, digit);
      display_dig_off(get_digit(lcd, i+1));
   }
@@ -174,7 +150,7 @@ void display_lcd(LCDDisplay *ldisp, float number)
     display_dig_off(ldig);
   }
     
-  for (i=MAX_DIGITS-1; i >= 0; i--)
+  for (i=strlen(digits)-1; i >= 0; i--)
   {
     if(digits[i] == '.' || digits[i] == ',' || digits[i]=='\0')
       continue;
@@ -183,9 +159,7 @@ void display_lcd(LCDDisplay *ldisp, float number)
     
     WINDOW * ldig = get_digit(ldisp, iddig);
     
-    if((i < 2 && dig > 0) ||
-        i >=2)
-      display_digit(ldisp, iddig,dig);
+    display_digit(ldisp, iddig,dig);
 
     iddig--;
   }

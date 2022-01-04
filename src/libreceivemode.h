@@ -32,7 +32,6 @@ void set_receive_mode(LCDReceiveMode *lmode, int mode, WINDOW *wmode);
 #define RECEIVE_MODE_FM   1002
 #define RECEIVE_MODE_USB  1003
 #define RECEIVE_MODE_LSB  1004
-#define RECEIVE_COLOR_ON  3
-#define RECEIVE_COLOR_OFF 4
-
+#define RECEIVE_COLOR_ON     3
+#define RECEIVE_COLOR_OFF    4
 #endif /* LIBRECEIVEMODE_H_ */

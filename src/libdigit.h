@@ -35,7 +35,7 @@ void set_digit(LCDDisplay *ldig, int ndig, WINDOW *dig);
 #define DIGIT_SIZE 6
 #define DIGIT_STR_LINE "***"
 #define DIGIT_STR_COL  "I"
-#define DIGIT_STR_BG   "....."
+#define DIGIT_STR_BG   "     "
 #define DIGIT_COLOR_ON  1
 #define DIGIT_COLOR_OFF 2
 

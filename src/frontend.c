@@ -80,8 +80,10 @@ ReceiverPanel *create_receiver_panel(WINDOW *main, int y, int x)
    wattroff(main, A_REVERSE);
    refresh();
 
-   lpanel->wreceive_mode = subwin(main, 3, 32, 1 , 0);
-   lpanel->lcd_mode = create_lcd_receive(lpanel->wreceive_mode, 2, 5);
+   lpanel->wreceive_mode = subwin(main, 3, 40, 1 , 0);
+   mvwprintw(main,y+1, x+3,"Mode:");
+   lpanel->lcd_mode = create_lcd_receive(lpanel->wreceive_mode, 1, 5);
+   mvwprintw(main,y+3, x+3, "VFO:");
    lpanel->lcd_vfo = create_lcd(main,y+4, x+3);
    refresh();
    
@@ -138,6 +140,40 @@ void goto_frequency(ReceiverPanel *panel)
   }
   
   panel->vfo = freq;
+ 
+  for(i=0; i<panel->maxx; i++)
+    mvprintw(panel->yinput, i, " ");
+  
+}
+
+void set_squelch_level(ReceiverPanel *panel)
+{
+  int i=0, r=0;
+  int sql = 0;
+
+  for(i=0; i<panel->maxx; i++)
+    mvprintw(panel->yinput, i, " ");
+ 
+  nodelay(stdscr, FALSE);
+  echo(); 
+  mvprintw(panel->yinput, panel->xinput, "Set squelch level (0-200): ");
+  refresh();
+  r = scanw("%d", &sql);
+  nodelay(stdscr, TRUE);
+  noecho();
+
+  for(i=0; i<panel->maxx; i++)
+    mvprintw(panel->yinput, i, " ");
+  
+  if(sql< 0 || sql > 200 || r != 1) {
+    mvprintw(panel->yinput, panel->xinput, "** INVALID SQUELCH LEVEL ***");
+    getch();
+    for(i=0; i<panel->maxx; i++)
+        mvprintw(panel->yinput, i, " ");
+    return;
+  }
+  
+  panel->sqlevel = sql;
  
   for(i=0; i<panel->maxx; i++)
     mvprintw(panel->yinput, i, " ");

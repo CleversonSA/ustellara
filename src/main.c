@@ -25,6 +25,9 @@ void increase_frequency(ReceiverPanel *rp);
 void decrease_frequency(ReceiverPanel *rp);
 void init_panel(ReceiverPanel *rp);
 void call_rtl_fm(ReceiverPanel *rp);
+void increase_volume(ReceiverPanel *rp);
+void decrease_volume(ReceiverPanel *rp);
+void switch_terminal();
 
 /* =======================================
  * Globals
@@ -40,11 +43,11 @@ void call_rtl_fm(ReceiverPanel *rp);
 #define MOD_NFM_BW 24000
 #define MOD_NFM_SR 24000
 #define MOD_USB    " usb "
-#define MOD_USB_BW 8000
-#define MOD_USB_SR 8000
+#define MOD_USB_BW 10120
+#define MOD_USB_SR 10120
 #define MOD_LSB    " lsb "
-#define MOD_LSB_BW 8000
-#define MOD_LSB_SR 8000
+#define MOD_LSB_BW 10120
+#define MOD_LSB_SR 10120
 #define DIRECT_SMP " -E direct2 "
 #define DIRECT_SMP_MAX_FREQ 24.0
 #define FREQ_DEFAULT_STEP_WBFM .1
@@ -55,7 +58,7 @@ void call_rtl_fm(ReceiverPanel *rp);
 #define FREQ_MAX	   2400.000
 #define FREQ_DEFAULT	   4.625
 #define MODE_DEFAULT       RECEIVE_MODE_USB
-
+#define MODE_ID_DEFAULT    4
 
 /* =======================================
  * Main 
@@ -63,7 +66,7 @@ void call_rtl_fm(ReceiverPanel *rp);
 int main(char args[])
 {
   int c = 0,
-      idmode = 0,
+      idmode = MODE_ID_DEFAULT,
       rmodes[] = {RECEIVE_MODE_AM,
       		  RECEIVE_MODE_FM,
       		  RECEIVE_MODE_WBFM,
@@ -85,28 +88,35 @@ int main(char args[])
   {
     switch(c)
     {
+      case 'W':
+      case 'w':
       case KEY_UP:
 	  increase_frequency(panel);
       	  call_rtl_fm(panel);
 	  break;
 
 
+      case 'S':
+      case 's':
       case KEY_DOWN:
 	  decrease_frequency(panel);
       	  call_rtl_fm(panel);
 	  break;
 
+      case 'A':
+      case 'a':
       case KEY_LEFT:
 	  idmode--;
-	  if(idmode < 0) idmode=0;
+	  if(idmode < 0) idmode=4;
 	  panel->receive_mode=rmodes[idmode];
 	  call_rtl_fm(panel);
 	  break;
 
-    
+      case 'D':
+      case 'd':
       case KEY_RIGHT:
 	  idmode++;
-	  if(idmode > ((int)sizeof(rmodes)/(int)sizeof(int))-1) idmode--;
+	  if(idmode > ((int)sizeof(rmodes)/(int)sizeof(int))-1) idmode=0;
 	  panel->receive_mode=rmodes[idmode];
 	  call_rtl_fm(panel);
 	  break;
@@ -115,6 +125,66 @@ int main(char args[])
       case 'F':
 	  goto_frequency(panel);
       	  call_rtl_fm(panel);
+	  break;
+
+      case 'l':
+	  set_squelch_level(panel);
+	  call_rtl_fm(panel);
+	  break;
+
+      case 'L':
+	  panel->sqlevel=0;
+	  call_rtl_fm(panel);
+	  break;
+      case 'R':
+      case 'r':
+	  call_rtl_fm(panel);
+	  break;
+
+      case '7':
+	  panel->current_freq_step = 1000.0;
+	  panel->custom_freq_step = 1;
+	  break;
+      case '6':
+	  panel->current_freq_step = 100.0;
+	  panel->custom_freq_step = 1;
+	  break;
+      case '5':
+	  panel->current_freq_step = 10.0;
+	  panel->custom_freq_step = 1;
+	  break;
+      case '4':
+	  panel->current_freq_step = 1.0;
+	  panel->custom_freq_step = 1;
+          break;
+      case '3':
+	  panel->current_freq_step = 0.1;
+	  panel->custom_freq_step = 1;
+          break;
+      case '2':
+	  panel->current_freq_step = 0.01;
+	  panel->custom_freq_step = 1;
+	  break;
+      case '1':
+	  panel->current_freq_step = 0.001;
+	  panel->custom_freq_step = 1;
+	  break;
+      case '0':
+	  panel->custom_freq_step = 0;
+	  break;
+      case '=':
+      case '+':
+	  increase_volume(panel);
+	  break;
+      case '-':
+	  decrease_volume(panel);
+	  break;
+      /* I really hate to do this, since
+       * my mechanical keyboard is not
+       * supported in linux and I don't
+       * have the fn keys supported */
+      case 'K':
+	  switch_terminal();
 	  break;
 
     }
@@ -143,10 +213,16 @@ char* build_rtl_command (char *buffer, ReceiverPanel *rp)
   if(rp->vfo < DIRECT_SMP_MAX_FREQ )
     strcat(buffer, DIRECT_SMP);
 
-  strcat(buffer, "-l0 ");
+  snprintf(sub_buffer, 16, "-l %d ",rp->sqlevel);
+  strcat(buffer, sub_buffer);
   snprintf(sub_buffer, 16,"-s %d ",rp->rtl_bw);
   strcat(buffer, sub_buffer);
-  strcat(buffer, "-g 50 | aplay ");
+  if(rp->vfo < DIRECT_SMP_MAX_FREQ )
+    strcat(buffer, "-g 50 -A fast -F 9");
+  else
+    strcat(buffer, "-g 50 -A std ");
+  strcat(buffer, "| aplay ");
+  strcat(buffer, " -D pulse ");
   snprintf(sub_buffer, 16,"-r %d ",rp->rtl_sr);
   strcat(buffer, sub_buffer);
   strcat(buffer, "-f S16_LE -t raw ");
@@ -209,6 +285,7 @@ void knob_turner(ReceiverPanel *rp)
 
 void increase_frequency(ReceiverPanel *rp)
 {
+ if(!rp->custom_freq_step)
    switch(rp->receive_mode)
    {
      case(RECEIVE_MODE_WBFM):
@@ -226,14 +303,17 @@ void increase_frequency(ReceiverPanel *rp)
      default:
 	rp->vfo += FREQ_DEFAULT_STEP_AM;	
    }
+ else
+   rp->vfo += rp->current_freq_step;
 
-   if (rp->vfo <= 0.0) rp->vfo = 0.0;
-   if (rp->vfo > FREQ_MAX) rp->vfo = FREQ_MAX;
+ if (rp->vfo <= 0.0) rp->vfo = 0.0;
+ if (rp->vfo > FREQ_MAX) rp->vfo = FREQ_MAX;
 
 }
 
 void decrease_frequency(ReceiverPanel *rp)
 {
+ if(!rp->custom_freq_step)
    switch(rp->receive_mode)
    {
      case(RECEIVE_MODE_WBFM):
@@ -251,6 +331,8 @@ void decrease_frequency(ReceiverPanel *rp)
      default:
 	rp->vfo -= FREQ_DEFAULT_STEP_AM;	
    }
+ else
+   rp->vfo -= rp->current_freq_step;
 
    if (rp->vfo <= 0.0) rp->vfo = 0.0;
    if (rp->vfo > FREQ_MAX) rp->vfo = FREQ_MAX;
@@ -261,6 +343,10 @@ void init_panel(ReceiverPanel *rp)
 {
   rp->vfo = FREQ_DEFAULT;
   rp->receive_mode = MODE_DEFAULT;
+  rp->current_freq_step= FREQ_DEFAULT_STEP_USB;
+  rp->custom_freq_step=  0;
+  rp->volume = 50;
+
   knob_turner(rp);
 
 }
@@ -273,14 +359,53 @@ void call_rtl_fm(ReceiverPanel *rp)
 
   /* PTBR: Evita o dedinho nervoso */
   strcpy(cmd3, cmd);
+  system("killall -INT rtl_fm  > /dev/null 2>&1");
   clock_t start_time = clock();
-  int milli = 1000 * 0.5 * (CLOCKS_PER_SEC/1000);
+  int milli = 1000 * 1 * (CLOCKS_PER_SEC/1000);
   while(clock() < start_time + milli)
 	    ;
   knob_turner(rp);
-  system("killall -9 rtl_fm  > /dev/null 2>&1");
-  system("killall -9 aplay > /dev/null 2>&1");
+  system("killall -INT rtl_fm > /dev/null 2>&1");
   build_rtl_command(cmd3, rp);
   system(cmd3);
   
+}
+
+void increase_volume(ReceiverPanel *rp) {
+  
+   char cmd[255] = {0};
+   char sub_buffer[16] = {0};
+
+   rp->volume += 10;
+   if (rp->volume > 100) rp->volume=100;
+
+   snprintf(sub_buffer, 16,"%d%%", rp->volume);
+   strcat(cmd, "amixer sset 'Master' ");
+   strcat(cmd, sub_buffer);
+   strcat(cmd, " > /dev/null 2>&1");
+   system(cmd);
+}
+
+
+void decrease_volume(ReceiverPanel *rp)
+{
+  char cmd[255] = {0};
+   char sub_buffer[16] = {0};
+    
+   rp->volume -= 10;
+   if (rp->volume < 0) rp->volume=0;
+
+   snprintf(sub_buffer, 16,"%d%%", rp->volume);
+   strcat(cmd, "amixer sset 'Master' ");
+   strcat(cmd, sub_buffer);
+   strcat(cmd, " > /dev/null 2>&1");
+
+   system(cmd);
+
+}
+
+void switch_terminal() 
+{
+  system("chvt 2");
+
 }
