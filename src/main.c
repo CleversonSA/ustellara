@@ -43,8 +43,8 @@ void switch_terminal();
 #define MOD_NFM_BW 24000
 #define MOD_NFM_SR 24000
 #define MOD_USB    " usb "
-#define MOD_USB_BW 10120
-#define MOD_USB_SR 10120
+#define MOD_USB_BW 12000
+#define MOD_USB_SR 12000
 #define MOD_LSB    " lsb "
 #define MOD_LSB_BW 10120
 #define MOD_LSB_SR 10120
@@ -59,6 +59,8 @@ void switch_terminal();
 #define FREQ_DEFAULT	   4.625
 #define MODE_DEFAULT       RECEIVE_MODE_USB
 #define MODE_ID_DEFAULT    4
+#define LODASH_WAIT_TIME_MS 1000
+
 
 /* =======================================
  * Main 
@@ -66,12 +68,16 @@ void switch_terminal();
 int main(char args[])
 {
   int c = 0,
+      lodash_time = 0,
+      is_call_rtl_fm = 0,
       idmode = MODE_ID_DEFAULT,
       rmodes[] = {RECEIVE_MODE_AM,
       		  RECEIVE_MODE_FM,
       		  RECEIVE_MODE_WBFM,
       		  RECEIVE_MODE_LSB,
       		  RECEIVE_MODE_USB};
+  clock_t tstart_time,
+	  tend_time;
 
   WINDOW *mainwin=initscr();
   cbreak();
@@ -83,6 +89,10 @@ int main(char args[])
   call_rtl_fm(panel);
  
   keypad(mainwin, TRUE);
+  nodelay(mainwin, TRUE);
+
+  tstart_time = clock();
+  lodash_time = LODASH_WAIT_TIME_MS * (CLOCKS_PER_SEC/1000);
 
   while ((c = getch()) != KEY_F(1))
   {
@@ -91,54 +101,73 @@ int main(char args[])
       case 'W':
       case 'w':
       case KEY_UP:
+ 	  tstart_time = clock();
 	  increase_frequency(panel);
-      	  call_rtl_fm(panel);
+      	  is_call_rtl_fm = 1;
+	  tunning_status_on(panel);
 	  break;
 
 
       case 'S':
       case 's':
       case KEY_DOWN:
+	  tstart_time = clock();
 	  decrease_frequency(panel);
-      	  call_rtl_fm(panel);
+      	  is_call_rtl_fm = 1;
+ 	  tunning_status_on(panel);
 	  break;
 
       case 'A':
       case 'a':
       case KEY_LEFT:
+	  tstart_time = clock();
 	  idmode--;
 	  if(idmode < 0) idmode=4;
 	  panel->receive_mode=rmodes[idmode];
-	  call_rtl_fm(panel);
+	  is_call_rtl_fm = 1;
+	  knob_turner(panel);
 	  break;
 
       case 'D':
       case 'd':
       case KEY_RIGHT:
+	  tstart_time = clock();
 	  idmode++;
 	  if(idmode > ((int)sizeof(rmodes)/(int)sizeof(int))-1) idmode=0;
 	  panel->receive_mode=rmodes[idmode];
-	  call_rtl_fm(panel);
+	  is_call_rtl_fm = 1;
+	  knob_turner(panel);
 	  break;
 
       case 'f':
       case 'F':
+	  tstart_time = clock();
+	  nodelay(mainwin, FALSE);
 	  goto_frequency(panel);
-      	  call_rtl_fm(panel);
+	  nodelay(mainwin, TRUE);
+      	  is_call_rtl_fm = 1;
+	  knob_turner(panel);
 	  break;
 
       case 'l':
+	  tstart_time = clock();
+	  nodelay(mainwin, FALSE);
 	  set_squelch_level(panel);
-	  call_rtl_fm(panel);
+	  nodelay(mainwin, TRUE);
+	  is_call_rtl_fm = 1;
+	  knob_turner(panel);
+	  show_squelch_level(panel);
 	  break;
 
       case 'L':
+	  tstart_time = clock();
 	  panel->sqlevel=0;
-	  call_rtl_fm(panel);
+	  is_call_rtl_fm = 1;
 	  break;
       case 'R':
       case 'r':
-	  call_rtl_fm(panel);
+ 	  tstart_time = clock();
+	  is_call_rtl_fm = 1;
 	  break;
 
       case '7':
@@ -189,7 +218,28 @@ int main(char args[])
 
     }
 
+    tend_time = clock();
 
+
+    if((((int)tend_time - (int)tstart_time) > lodash_time)) 
+    {
+       if (is_call_rtl_fm == 1) 
+       {
+         call_rtl_fm(panel);
+         tstart_time = tend_time = clock();
+         is_call_rtl_fm = 0;
+
+	 tunning_status_off(panel);
+	 volume_off(panel);
+       }
+       else
+       {
+         tstart_time = tend_time = clock();
+	 
+	 volume_off(panel);
+       }      
+    }
+    
   }
 
   exit(0); 
@@ -308,7 +358,8 @@ void increase_frequency(ReceiverPanel *rp)
 
  if (rp->vfo <= 0.0) rp->vfo = 0.0;
  if (rp->vfo > FREQ_MAX) rp->vfo = FREQ_MAX;
-
+ 
+ knob_turner(rp);
 }
 
 void decrease_frequency(ReceiverPanel *rp)
@@ -337,6 +388,7 @@ void decrease_frequency(ReceiverPanel *rp)
    if (rp->vfo <= 0.0) rp->vfo = 0.0;
    if (rp->vfo > FREQ_MAX) rp->vfo = FREQ_MAX;
 
+  knob_turner(rp);
 }
 
 void init_panel(ReceiverPanel *rp)
@@ -361,10 +413,10 @@ void call_rtl_fm(ReceiverPanel *rp)
   strcpy(cmd3, cmd);
   system("killall -INT rtl_fm  > /dev/null 2>&1");
   clock_t start_time = clock();
-  int milli = 1000 * 1 * (CLOCKS_PER_SEC/1000);
+  int milli = 1000 * (CLOCKS_PER_SEC/1000);
   while(clock() < start_time + milli)
 	    ;
-  knob_turner(rp);
+  /* knob_turner(rp);*/
   system("killall -INT rtl_fm > /dev/null 2>&1");
   build_rtl_command(cmd3, rp);
   system(cmd3);
@@ -384,6 +436,8 @@ void increase_volume(ReceiverPanel *rp) {
    strcat(cmd, sub_buffer);
    strcat(cmd, " > /dev/null 2>&1");
    system(cmd);
+
+   volume_on(rp);
 }
 
 
@@ -402,6 +456,7 @@ void decrease_volume(ReceiverPanel *rp)
 
    system(cmd);
 
+   volume_on(rp);
 }
 
 void switch_terminal() 

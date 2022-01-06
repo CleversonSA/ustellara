@@ -7,18 +7,8 @@
 #include "frontend.h"
 
 /****************************************
- * Structures
+  Structures
  * *************************************/
-/*typedef struct ReceiverPanelSt
-{
-  LCDDisplay     *lcd_vfo;
-  LCDReceiveMode *lcd_mode;
-  WINDOW         *wreceive_mode;
-  float		 vfo;
-  int		 receive_mode;
-  int		 lvfo_current_digit;
-} ReceiverPanel;
-*/
 
 /****************************************
  * Globals
@@ -27,10 +17,6 @@
 /***************************************
  * Prototypes
  * *************************************/
-/*ReceiverPanel *create_receiver_panel(WINDOW *main, int y, int x); 
-void change_receive_mode(ReceiverPanel *panel, int mode);
-void change_frequency(ReceiverPanel *panel, float freq);
-*/
 
 /***************************************
  * Main
@@ -83,10 +69,24 @@ ReceiverPanel *create_receiver_panel(WINDOW *main, int y, int x)
    lpanel->wreceive_mode = subwin(main, 3, 40, 1 , 0);
    mvwprintw(main,y+1, x+3,"Mode:");
    lpanel->lcd_mode = create_lcd_receive(lpanel->wreceive_mode, 1, 5);
-   mvwprintw(main,y+3, x+3, "VFO:");
-   lpanel->lcd_vfo = create_lcd(main,y+4, x+3);
+
+   lpanel->wvolume = subwin(main, 1, 4, y+1, maxx - 7);
+   mvwprintw(main,y+1, maxx - 12, "Vol:");
+   volume_off(lpanel);
+
+   lpanel->wsquelch = subwin(main, 1, 4, y+2, x+ 9);
+   mvwprintw(main,y+2, x+3, "Sqch:");
+   show_squelch_level(lpanel);
+
+   mvwprintw(main,y+4, x+3, "VFO:");
+   lpanel->lcd_vfo = create_lcd(main,y+5, x+3);
    refresh();
-   
+
+   lpanel->tunning_status = subwin(main,1,12,y+4, maxx - 12);
+   tunning_status_off(lpanel);
+   refresh();
+
+
    lpanel->xinput = x + 3;
    lpanel->yinput = maxy - 3;
    lpanel->maxx = maxx;
@@ -178,4 +178,49 @@ void set_squelch_level(ReceiverPanel *panel)
   for(i=0; i<panel->maxx; i++)
     mvprintw(panel->yinput, i, " ");
   
+}
+
+void tunning_status_off(ReceiverPanel *panel)
+{
+   wattron(panel->tunning_status,COLOR_PAIR(DIGIT_COLOR_OFF));
+   mvwprintw(panel->tunning_status, 0,0, "< Tunning >");
+   wattroff(panel->tunning_status,COLOR_PAIR(DIGIT_COLOR_OFF));
+   wrefresh(panel->tunning_status);
+}
+
+
+void tunning_status_on(ReceiverPanel *panel)
+{
+   
+   wattron(panel->tunning_status,COLOR_PAIR(DIGIT_COLOR_ON) | A_BOLD);
+   mvwprintw(panel->tunning_status, 0,0, "< Tunning >");
+   wattroff(panel->tunning_status,COLOR_PAIR(DIGIT_COLOR_ON) | A_BOLD);
+   wrefresh(panel->tunning_status);
+}
+
+void volume_on(ReceiverPanel *panel)
+{
+   wattron(panel->wvolume,COLOR_PAIR(RECEIVE_COLOR_ON) | A_BOLD);
+   mvwprintw(panel->wvolume, 0,0, "%3d%%", panel->volume);
+   wattroff(panel->wvolume,COLOR_PAIR(RECEIVE_COLOR_ON) | A_BOLD);
+   wrefresh(panel->wvolume);
+
+}
+
+void volume_off(ReceiverPanel *panel)
+{
+   wattron(panel->wvolume,COLOR_PAIR(RECEIVE_COLOR_OFF));
+   mvwprintw(panel->wvolume, 0,0, "%3d%%", panel->volume);
+   wattroff(panel->wvolume,COLOR_PAIR(RECEIVE_COLOR_OFF));
+   wrefresh(panel->wvolume);
+
+
+}
+
+void show_squelch_level(ReceiverPanel *panel)
+{
+   wattron(panel->wsquelch,COLOR_PAIR(RECEIVE_COLOR_OFF));
+   mvwprintw(panel->wsquelch, 0,0, "%3d%", panel->sqlevel);
+   wattroff(panel->wsquelch,COLOR_PAIR(RECEIVE_COLOR_OFF));
+   wrefresh(panel->wsquelch);
 }

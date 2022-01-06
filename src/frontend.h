@@ -12,6 +12,9 @@ typedef struct ReceiverPanelSt
   LCDDisplay     *lcd_vfo;
   LCDReceiveMode *lcd_mode;
   WINDOW         *wreceive_mode;
+  WINDOW         *wvolume;
+  WINDOW	 *wsquelch;
+  WINDOW         *tunning_status;
   float		 vfo;
   int		 receive_mode;
   char		 *rtl_mod;
@@ -42,5 +45,10 @@ void change_receive_mode(ReceiverPanel *panel, int mode);
 void change_frequency(ReceiverPanel *panel, float freq);
 void goto_frequency(ReceiverPanel *panel);
 void set_squelch_level(ReceiverPanel *panel);
+void tunning_status_on(ReceiverPanel *panel);
+void tunning_status_off(ReceiverPanel *panel);
+void volume_on(ReceiverPanel *panel);
+void volume_off(ReceiverPanel *panel);
+void show_squelch_level(ReceiverPanel *panel);
 
 #endif /* FRONTEND_H_ */
