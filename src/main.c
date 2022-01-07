@@ -43,8 +43,8 @@ void switch_terminal();
 #define MOD_NFM_BW 24000
 #define MOD_NFM_SR 24000
 #define MOD_USB    " usb "
-#define MOD_USB_BW 12000
-#define MOD_USB_SR 12000
+#define MOD_USB_BW 10000
+#define MOD_USB_SR 10000
 #define MOD_LSB    " lsb "
 #define MOD_LSB_BW 10120
 #define MOD_LSB_SR 10120
