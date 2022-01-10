@@ -35,8 +35,8 @@ Enjoy! Visit my QRZ.com
   - It uses ncurses, so make sure you have ncurses installed first
   - Make sure you have the gr-osmosdr installed and properly. It needs the rtl_fm utility.
 
-  make
-  sudo make install
+  - make
+  - sudo make install
  
   (If you have a small screen, you could use ./build.sh command to show the compiling result)
 
