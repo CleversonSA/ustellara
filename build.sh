@@ -3,12 +3,8 @@
 rm -f err.log 
 
 (
- gcc -o ./build/ustellara \
-   ./src/libreceivemode.c \
-   ./src/libdigit.c \
-   ./src/frontend.c \
-   ./src/main.c \
-   -lncurses
+  make
+  make clean
 ) 2>err.log
 
 vim err.log

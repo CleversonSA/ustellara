@@ -231,6 +231,7 @@ int main(char args[])
 
 	 tunning_status_off(panel);
 	 volume_off(panel);
+	 redrawwin(mainwin);
        }
        else
        {

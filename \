@@ -8,10 +8,6 @@ IMPORTANT NOTICE: This app doesn't modifies the rtl_fm repository, this uses it 
 
 I love the linux console mode, so this project was not intented to be a graphical FFT or waterfall, it could be used, in future, by SSH access to tune a "remote" radio connected to external speakers.
 
-The aestic of the app was inspired on my Kenwood TS-140s ham radio rig, the colors, digits, the way of turning on/off the display components, etc. :) 
-
-Enjoy! Visit my QRZ.com
-
 # Features
 
 - Frequency tunner with arrow keys usage
@@ -25,26 +21,11 @@ Enjoy! Visit my QRZ.com
 
 # Known issues
 - Like I said, this frontend uses rtl_fm as a child process (System C command), so, sometimes after a frequency search, the rtl_fm app could stop running. It's normal and the only way to correct it is modifing the source code, that's not my target. 
-  So. just press 'R' and evething works normal again. 
-- Works only on stand gr-osmosdr default installation (TODO thing to correct later)
-- Big screens was not fully supported (TODO later)
+  So. just press R and evething works normal again. 
+It was built and projected for Raspberry PI 3+ and small 3.5 LCDs Screens,
+so, in big screens could get problems.
 
+# To build
+I use gcc (GNU C Compiler), but I've not migrated to make and install schema, so I created a ./build.sh file and a ./run.sh one.
 
-# Compiling and install
-  
-  - It uses ncurses, so make sure you have ncurses installed first
-  - Make sure you have the gr-osmosdr installed and properly. It needs the rtl_fm utility.
-
-  make
-  sudo make install
- 
-  (If you have a small screen, you could use ./build.sh command to show the compiling result)
-
-# Future plans
-
- - Make work on bigger screens (for ssh access)
- - Add ETM (Easy Tunnig Mode) using rtl_power
- - Add Frequency scan
- - Add VFO A and VFO B
- - Choice dongle? (If you have more than one dongle installed)
 
