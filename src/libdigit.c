@@ -157,8 +157,6 @@ void display_lcd(LCDDisplay *ldisp, float number)
    
     dig = digits[i] - '0';
     
-    WINDOW * ldig = get_digit(ldisp, iddig);
-    
     display_digit(ldisp, iddig,dig);
 
     iddig--;
@@ -192,7 +190,8 @@ WINDOW * get_digit(LCDDisplay *ldig, int ndig)
     case(4): return(ldig->d4); 
     case(5): return(ldig->d5); 
     case(6): return(ldig->d6); 
-    case(7): return(ldig->d7); 
+    case(7): return(ldig->d7);
+    default: return(ldig->d1); 
   }
 
 }

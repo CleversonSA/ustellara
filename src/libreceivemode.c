@@ -91,7 +91,6 @@ LCDReceiveMode * create_lcd_receive(WINDOW *main, int y, int x)
 
 void display_lcd_receive_off(LCDReceiveMode *lmode)
 {
-  int i = 0;
   
   WINDOW *wmode = get_receive_mode(lmode, RECEIVE_MODE_AM);
   wattron(wmode, COLOR_PAIR(RECEIVE_COLOR_OFF));
@@ -133,6 +132,7 @@ WINDOW * get_receive_mode(LCDReceiveMode *lmode, int mode)
     case(RECEIVE_MODE_FM):   return(lmode->fm);
     case(RECEIVE_MODE_USB):  return(lmode->usb);
     case(RECEIVE_MODE_LSB):  return(lmode->lsb);
+    default: return(lmode->usb);
   }  
  
 
@@ -147,6 +147,8 @@ void set_receive_mode(LCDReceiveMode *lmode, int mode, WINDOW *wmode)
     case(RECEIVE_MODE_FM): lmode->fm = wmode; break;
     case(RECEIVE_MODE_LSB): lmode->lsb = wmode; break;
     case(RECEIVE_MODE_USB): lmode->usb = wmode; break;
+    default:
+	lmode->usb=wmode;
   }
 }
 

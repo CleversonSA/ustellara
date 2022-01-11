@@ -62,7 +62,7 @@ ReceiverPanel *create_receiver_panel(WINDOW *main, int y, int x)
    remainx = maxx - strlen(bottom_title);
    for (i=0; i<=remainx; i++)
       mvwprintw(main, maxy-1, strlen(bottom_title)+i, " ");
-   
+   mvwprintw(main, 0, maxx-5, APP_VERSION);
    wattroff(main, A_REVERSE);
    refresh();
 
@@ -73,6 +73,9 @@ ReceiverPanel *create_receiver_panel(WINDOW *main, int y, int x)
    lpanel->wvolume = subwin(main, 1, 4, y+1, maxx - 7);
    mvwprintw(main,y+1, maxx - 12, "Vol:");
    volume_off(lpanel);
+
+   lpanel->wpreamp_mode = subwin(main, 1,9, y+2, maxx - 12);
+   preamp_mode_off(lpanel);
 
    lpanel->wsquelch = subwin(main, 1, 4, y+2, x+ 9);
    mvwprintw(main,y+2, x+3, "Sqch:");
@@ -223,4 +226,22 @@ void show_squelch_level(ReceiverPanel *panel)
    mvwprintw(panel->wsquelch, 0,0, "%3d%", panel->sqlevel);
    wattroff(panel->wsquelch,COLOR_PAIR(RECEIVE_COLOR_OFF));
    wrefresh(panel->wsquelch);
+}
+
+
+void preamp_mode_on(ReceiverPanel *panel)
+{
+   wattron(panel->wpreamp_mode,COLOR_PAIR(RECEIVE_COLOR_ON) | A_BOLD);
+   mvwprintw(panel->wpreamp_mode,0,0, "<Pre-amp>");
+   wattroff(panel->wpreamp_mode,COLOR_PAIR(RECEIVE_COLOR_ON) | A_BOLD);
+   wrefresh(panel->wpreamp_mode);
+}
+
+void preamp_mode_off(ReceiverPanel *panel)
+{
+  wattron(panel->wpreamp_mode,COLOR_PAIR(RECEIVE_COLOR_OFF));
+   mvwprintw(panel->wpreamp_mode,0,0, "<Pre-amp>");
+   wattroff(panel->wpreamp_mode,COLOR_PAIR(RECEIVE_COLOR_OFF));
+   wrefresh(panel->wpreamp_mode);
+
 }

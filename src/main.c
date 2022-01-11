@@ -28,6 +28,8 @@ void call_rtl_fm(ReceiverPanel *rp);
 void increase_volume(ReceiverPanel *rp);
 void decrease_volume(ReceiverPanel *rp);
 void switch_terminal();
+int get_preamp_vol_value(ReceiverPanel *rp);
+
 
 /* =======================================
  * Globals
@@ -36,18 +38,28 @@ void switch_terminal();
 #define MOD_AM     " am "
 #define MOD_AM_BW  16000
 #define MOD_AM_SR  16000
+#define MOD_AM_PA_DS  150
+#define MOD_AM_PA_QS  50
 #define MOD_FM     " wbfm "
 #define MOD_FM_BW  240000
 #define MOD_FM_SR  32000
+#define MOD_FM_PA_DS  50
+#define MOD_FM_PA_QS  0
 #define MOD_NFM    " fm "
 #define MOD_NFM_BW 24000
 #define MOD_NFM_SR 24000
+#define MOD_NFM_PA_DS 0
+#define MOD_NFM_PA_QS 0
 #define MOD_USB    " usb "
 #define MOD_USB_BW 10000
 #define MOD_USB_SR 10000
+#define MOD_USB_PA_QS 100
+#define MOD_USB_PA_DS 150
 #define MOD_LSB    " lsb "
 #define MOD_LSB_BW 10120
 #define MOD_LSB_SR 10120
+#define MOD_LSB_PA_QS 100
+#define MOD_LSB_PA_DS 150
 #define DIRECT_SMP " -E direct2 "
 #define DIRECT_SMP_MAX_FREQ 24.0
 #define FREQ_DEFAULT_STEP_WBFM .1
@@ -65,7 +77,7 @@ void switch_terminal();
 /* =======================================
  * Main 
  * =======================================*/
-int main(char args[])
+int main(void)
 {
   int c = 0,
       lodash_time = 0,
@@ -78,7 +90,7 @@ int main(char args[])
       		  RECEIVE_MODE_USB};
   clock_t tstart_time,
 	  tend_time;
-
+  
   WINDOW *mainwin=initscr();
   cbreak();
   noecho();
@@ -200,6 +212,30 @@ int main(char args[])
 	  break;
       case '0':
 	  panel->custom_freq_step = 0;
+	  break;
+      case 'n':
+      case 'N':
+	  panel->volume = 50;
+	  break;
+      case 'm':
+      case 'M':
+	  panel->volume = -1;
+	  decrease_volume(panel);
+	  break;
+      case 'p':
+      case 'P':
+	  if (panel->preamp_mode==0)
+	  {
+	    panel->preamp_mode = 1;
+	    preamp_mode_on(panel);
+	  }
+	  else
+	  {
+            panel->preamp_mode = 0;
+	    preamp_mode_off(panel);
+	  }
+	  panel->volume = 0;
+	  increase_volume(panel);
 	  break;
       case '=':
       case '+':
@@ -365,7 +401,9 @@ void increase_frequency(ReceiverPanel *rp)
 
 void decrease_frequency(ReceiverPanel *rp)
 {
- if(!rp->custom_freq_step)
+
+
+  if(!rp->custom_freq_step)
    switch(rp->receive_mode)
    {
      case(RECEIVE_MODE_WBFM):
@@ -383,8 +421,8 @@ void decrease_frequency(ReceiverPanel *rp)
      default:
 	rp->vfo -= FREQ_DEFAULT_STEP_AM;	
    }
- else
-   rp->vfo -= rp->current_freq_step;
+   else
+     rp->vfo -= rp->current_freq_step;
 
    if (rp->vfo <= 0.0) rp->vfo = 0.0;
    if (rp->vfo > FREQ_MAX) rp->vfo = FREQ_MAX;
@@ -399,6 +437,7 @@ void init_panel(ReceiverPanel *rp)
   rp->current_freq_step= FREQ_DEFAULT_STEP_USB;
   rp->custom_freq_step=  0;
   rp->volume = 50;
+  rp->preamp_mode = 0;
 
   knob_turner(rp);
 
@@ -432,8 +471,10 @@ void increase_volume(ReceiverPanel *rp) {
    rp->volume += 10;
    if (rp->volume > 100) rp->volume=100;
 
-   snprintf(sub_buffer, 16,"%d%%", rp->volume);
-   strcat(cmd, "amixer sset 'Master' ");
+   snprintf(sub_buffer, 16,"%d%%", rp->volume+get_preamp_vol_value(rp));
+ 
+   /* strcat(cmd, "amixer sset 'Master' ");*/
+   strcat(cmd, "pactl -- set-sink-volume $(pacmd list-sinks | grep \"*\" | grep \"index\" | awk '{ print $3 }') ");
    strcat(cmd, sub_buffer);
    strcat(cmd, " > /dev/null 2>&1");
    system(cmd);
@@ -450,8 +491,12 @@ void decrease_volume(ReceiverPanel *rp)
    rp->volume -= 10;
    if (rp->volume < 0) rp->volume=0;
 
-   snprintf(sub_buffer, 16,"%d%%", rp->volume);
-   strcat(cmd, "amixer sset 'Master' ");
+   if (rp->volume > 0)
+      snprintf(sub_buffer, 16,"%d%%", rp->volume+get_preamp_vol_value(rp));
+   else
+      snprintf(sub_buffer, 16,"%d%%", rp->volume);
+  /* strcat(cmd, "amixer sset 'Master' ");*/
+   strcat(cmd, "pactl -- set-sink-volume $(pacmd list-sinks | grep \"*\" | grep \"index\" | awk '{ print $3 }') "); 
    strcat(cmd, sub_buffer);
    strcat(cmd, " > /dev/null 2>&1");
 
@@ -464,4 +509,46 @@ void switch_terminal()
 {
   system("chvt 2");
 
+}
+
+int get_preamp_vol_value(ReceiverPanel *rp)
+{
+ 
+  if(rp->preamp_mode == 0)
+    return 0;
+
+  /* Direct sample not needed for 24Mhz or higher */
+  if(rp->vfo < DIRECT_SMP_MAX_FREQ )
+   switch(rp->receive_mode)
+   {
+     case(RECEIVE_MODE_WBFM):
+	return MOD_FM_PA_DS;
+     case(RECEIVE_MODE_FM):
+	return MOD_NFM_PA_DS;
+     case(RECEIVE_MODE_USB):
+	return MOD_USB_PA_DS;
+     case(RECEIVE_MODE_LSB):
+	return MOD_LSB_PA_DS;
+     case(RECEIVE_MODE_AM):
+	return MOD_AM_PA_DS;
+     default:
+	return 0;	
+   }
+  else
+   switch(rp->receive_mode)
+   {
+     case(RECEIVE_MODE_WBFM):
+	return MOD_FM_PA_QS;
+     case(RECEIVE_MODE_FM):
+	return MOD_NFM_PA_QS;
+     case(RECEIVE_MODE_USB):
+	return MOD_USB_PA_QS;
+     case(RECEIVE_MODE_LSB):
+	return MOD_LSB_PA_QS;
+     case(RECEIVE_MODE_AM):
+	return MOD_AM_PA_QS;
+     default:
+	return 0;	
+   }
+ 
 }
