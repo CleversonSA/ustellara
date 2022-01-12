@@ -16,6 +16,7 @@ typedef struct ReceiverPanelSt
   WINDOW	 *wsquelch;
   WINDOW         *tunning_status;
   WINDOW         *wpreamp_mode;
+  WINDOW	 *wfreq_step;
   float		 vfo;
   int		 receive_mode;
   char		 *rtl_mod;
@@ -37,7 +38,7 @@ typedef struct ReceiverPanelSt
 /****************************************
  * Globals
  * *************************************/
-#define APP_VERSION "0.6.0"
+#define APP_VERSION "0.7.0"
 
 /***************************************
  * Prototypes
@@ -54,5 +55,6 @@ void volume_off(ReceiverPanel *panel);
 void show_squelch_level(ReceiverPanel *panel);
 void preamp_mode_on(ReceiverPanel *panel);
 void preamp_mode_off(ReceiverPanel *panel);
+void show_freq_step_scale(ReceiverPanel *panel);
 
 #endif /* FRONTEND_H_ */

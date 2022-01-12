@@ -36,10 +36,10 @@ int get_preamp_vol_value(ReceiverPanel *rp);
  * =======================================*/
 #define RTL_FM_CMD "rtl_fm "
 #define MOD_AM     " am "
-#define MOD_AM_BW  16000
-#define MOD_AM_SR  16000
+#define MOD_AM_BW  11000
+#define MOD_AM_SR  11000
 #define MOD_AM_PA_DS  150
-#define MOD_AM_PA_QS  50
+#define MOD_AM_PA_QS  100
 #define MOD_FM     " wbfm "
 #define MOD_FM_BW  240000
 #define MOD_FM_SR  32000
@@ -53,13 +53,13 @@ int get_preamp_vol_value(ReceiverPanel *rp);
 #define MOD_USB    " usb "
 #define MOD_USB_BW 10000
 #define MOD_USB_SR 10000
-#define MOD_USB_PA_QS 100
-#define MOD_USB_PA_DS 150
+#define MOD_USB_PA_QS 200
+#define MOD_USB_PA_DS 200
 #define MOD_LSB    " lsb "
 #define MOD_LSB_BW 10120
 #define MOD_LSB_SR 10120
-#define MOD_LSB_PA_QS 100
-#define MOD_LSB_PA_DS 150
+#define MOD_LSB_PA_QS 200
+#define MOD_LSB_PA_DS 200
 #define DIRECT_SMP " -E direct2 "
 #define DIRECT_SMP_MAX_FREQ 24.0
 #define FREQ_DEFAULT_STEP_WBFM .1
@@ -274,6 +274,7 @@ int main(void)
          tstart_time = tend_time = clock();
 	 
 	 volume_off(panel);
+	 show_freq_step_scale(panel);
        }      
     }
     

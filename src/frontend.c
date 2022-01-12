@@ -67,25 +67,29 @@ ReceiverPanel *create_receiver_panel(WINDOW *main, int y, int x)
    refresh();
 
    lpanel->wreceive_mode = subwin(main, 3, 40, 1 , 0);
-   mvwprintw(main,y+1, x+3,"Mode:");
-   lpanel->lcd_mode = create_lcd_receive(lpanel->wreceive_mode, 1, 5);
+   mvwprintw(main,y+1, x+2,"Mode:");
+   lpanel->lcd_mode = create_lcd_receive(lpanel->wreceive_mode, y+1, x+4);
 
-   lpanel->wvolume = subwin(main, 1, 4, y+1, maxx - 7);
-   mvwprintw(main,y+1, maxx - 12, "Vol:");
+   lpanel->wvolume = subwin(main, 1, 4, y+1, maxx - 5);
+   mvwprintw(main,y+1, maxx - 12, "Volume:");
    volume_off(lpanel);
 
-   lpanel->wpreamp_mode = subwin(main, 1,9, y+2, maxx - 12);
+   lpanel->wpreamp_mode = subwin(main, 1,11, y+2, maxx - 12);
    preamp_mode_off(lpanel);
 
    lpanel->wsquelch = subwin(main, 1, 4, y+2, x+ 9);
-   mvwprintw(main,y+2, x+3, "Sqch:");
+   mvwprintw(main,y+2, x+2, "Sqch:");
    show_squelch_level(lpanel);
 
-   mvwprintw(main,y+4, x+3, "VFO:");
+   lpanel->wfreq_step = subwin(main, 1, 20, y+3,x+9);
+   mvwprintw(main, y+3, x+2, "F.Stp:");
+   show_freq_step_scale(lpanel);
+
+   /*mvwprintw(main,y+3, x+3, "VFO:");*/
    lpanel->lcd_vfo = create_lcd(main,y+5, x+3);
    refresh();
 
-   lpanel->tunning_status = subwin(main,1,12,y+4, maxx - 12);
+   lpanel->tunning_status = subwin(main,1,12,y+3, maxx - 12);
    tunning_status_off(lpanel);
    refresh();
 
@@ -232,7 +236,7 @@ void show_squelch_level(ReceiverPanel *panel)
 void preamp_mode_on(ReceiverPanel *panel)
 {
    wattron(panel->wpreamp_mode,COLOR_PAIR(RECEIVE_COLOR_ON) | A_BOLD);
-   mvwprintw(panel->wpreamp_mode,0,0, "<Pre-amp>");
+   mvwprintw(panel->wpreamp_mode,0,0, "< Pre-amp >");
    wattroff(panel->wpreamp_mode,COLOR_PAIR(RECEIVE_COLOR_ON) | A_BOLD);
    wrefresh(panel->wpreamp_mode);
 }
@@ -240,8 +244,45 @@ void preamp_mode_on(ReceiverPanel *panel)
 void preamp_mode_off(ReceiverPanel *panel)
 {
   wattron(panel->wpreamp_mode,COLOR_PAIR(RECEIVE_COLOR_OFF));
-   mvwprintw(panel->wpreamp_mode,0,0, "<Pre-amp>");
+   mvwprintw(panel->wpreamp_mode,0,0, "< Pre-amp >");
    wattroff(panel->wpreamp_mode,COLOR_PAIR(RECEIVE_COLOR_OFF));
    wrefresh(panel->wpreamp_mode);
 
+}
+
+void show_freq_step_scale(ReceiverPanel *panel)
+{
+
+   int digit = 0;
+
+   wattron(panel->wfreq_step,COLOR_PAIR(RECEIVE_COLOR_OFF));
+   mvwprintw(panel->wfreq_step,0,0, "*******");
+   mvwprintw(panel->wfreq_step,0,8, "auto");
+   wattroff(panel->wfreq_step,COLOR_PAIR(RECEIVE_COLOR_OFF));
+   wrefresh(panel->wfreq_step);
+
+   wattron(panel->wfreq_step,COLOR_PAIR(RECEIVE_COLOR_ON) | A_BOLD);
+
+   if (panel->custom_freq_step == 0)
+     mvwprintw(panel->wfreq_step,0,8,"auto");
+   else
+   {
+     float f = panel->current_freq_step;
+
+     /* 
+      * For future info, I learned at the hard way that if f == 0.001, and f is 0.001 for a human is OK, but for floating point is not equal, so it could get you totally mad. So, you have to use f at end! */
+
+     if (f == 0.001f)digit = 7;
+     if (f == 0.01f) digit = 6;
+     if (f == 0.1f)  digit = 5;
+     if (f == 1.0)   digit = 4;
+     if (f == 10.0)  digit = 3;
+     if (f == 100.0) digit = 2;
+     if (f == 1000.0) digit = 1;
+     mvwprintw(panel->wfreq_step,0,(digit - 1),"*");
+
+   }
+   wattroff(panel->wfreq_step,COLOR_PAIR(RECEIVE_COLOR_ON) | A_BOLD);
+   wrefresh(panel->wfreq_step);
+  
 }
