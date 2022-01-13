@@ -81,6 +81,10 @@ ReceiverPanel *create_receiver_panel(WINDOW *main, int y, int x)
    mvwprintw(main,y+2, x+2, "Sqch:");
    show_squelch_level(lpanel);
 
+   lpanel->wclarifier = subwin(main, 1, 8, y+2, x+20);
+   mvwprintw(main,y+2, x+15, "Cla:");
+   clarifier_off(lpanel);
+
    lpanel->wfreq_step = subwin(main, 1, 20, y+3,x+9);
    mvwprintw(main, y+3, x+2, "F.Stp:");
    show_freq_step_scale(lpanel);
@@ -285,4 +289,45 @@ void show_freq_step_scale(ReceiverPanel *panel)
    wattroff(panel->wfreq_step,COLOR_PAIR(RECEIVE_COLOR_ON) | A_BOLD);
    wrefresh(panel->wfreq_step);
   
+}
+
+
+void clarifier_off(ReceiverPanel *panel)
+{
+   wattron(panel->wclarifier,COLOR_PAIR(RECEIVE_COLOR_OFF));
+
+
+   if (panel->current_clarifier > 0)
+     mvwprintw(panel->wclarifier,0,0, "+");
+   else if (panel->current_clarifier < 0)
+     mvwprintw(panel->wclarifier,0,0, "-");
+   else
+     mvwprintw(panel->wclarifier,0,0,  " ");
+
+   mvwprintw(panel->wclarifier,0,1,"%3d Hz",abs(panel->current_clarifier));
+
+ 
+   wattroff(panel->wclarifier,COLOR_PAIR(RECEIVE_COLOR_OFF));
+   wrefresh(panel->wclarifier);
+
+}
+
+
+void clarifier_on(ReceiverPanel *panel)
+{
+   wattron(panel->wclarifier,COLOR_PAIR(RECEIVE_COLOR_ON) | A_BOLD);
+
+
+   if (panel->current_clarifier > 0)
+     mvwprintw(panel->wclarifier,0,0, "+");
+   else if (panel->current_clarifier < 0)
+     mvwprintw(panel->wclarifier,0,0, "-");
+   else
+     mvwprintw(panel->wclarifier,0,0,  " ");
+
+   mvwprintw(panel->wclarifier,0,1,"%3d Hz",abs(panel->current_clarifier));
+
+   wattroff(panel->wclarifier,COLOR_PAIR(RECEIVE_COLOR_OFF) | A_BOLD);
+   wrefresh(panel->wclarifier);
+
 }

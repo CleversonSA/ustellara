@@ -26,9 +26,13 @@ void decrease_frequency(ReceiverPanel *rp);
 void init_panel(ReceiverPanel *rp);
 void call_rtl_fm(ReceiverPanel *rp);
 void increase_volume(ReceiverPanel *rp);
+void increase_clarifier(ReceiverPanel *rp);
 void decrease_volume(ReceiverPanel *rp);
+void decrease_clarifier(ReceiverPanel *rp);
+void reset_clarifier(ReceiverPanel *rp);
 void switch_terminal();
 int get_preamp_vol_value(ReceiverPanel *rp);
+void call_shutdown();
 
 
 /* =======================================
@@ -53,12 +57,12 @@ int get_preamp_vol_value(ReceiverPanel *rp);
 #define MOD_USB    " usb "
 #define MOD_USB_BW 10000
 #define MOD_USB_SR 10000
-#define MOD_USB_PA_QS 200
+#define MOD_USB_PA_QS 150
 #define MOD_USB_PA_DS 200
 #define MOD_LSB    " lsb "
 #define MOD_LSB_BW 10120
 #define MOD_LSB_SR 10120
-#define MOD_LSB_PA_QS 200
+#define MOD_LSB_PA_QS 150
 #define MOD_LSB_PA_DS 200
 #define DIRECT_SMP " -E direct2 "
 #define DIRECT_SMP_MAX_FREQ 24.0
@@ -110,22 +114,19 @@ int main(void)
   {
     switch(c)
     {
-      case 'W':
-      case 'w':
       case KEY_UP:
  	  tstart_time = clock();
 	  increase_frequency(panel);
       	  is_call_rtl_fm = 1;
+	  reset_clarifier(panel);
 	  tunning_status_on(panel);
 	  break;
 
-
-      case 'S':
-      case 's':
       case KEY_DOWN:
 	  tstart_time = clock();
 	  decrease_frequency(panel);
       	  is_call_rtl_fm = 1;
+	  reset_clarifier(panel);
  	  tunning_status_on(panel);
 	  break;
 
@@ -151,6 +152,10 @@ int main(void)
 	  knob_turner(panel);
 	  break;
 
+      case KEY_END:
+	  call_shutdown();
+	  break;
+
       case 'f':
       case 'F':
 	  tstart_time = clock();
@@ -158,6 +163,7 @@ int main(void)
 	  goto_frequency(panel);
 	  nodelay(mainwin, TRUE);
       	  is_call_rtl_fm = 1;
+	  reset_clarifier(panel);
 	  knob_turner(panel);
 	  break;
 
@@ -252,6 +258,28 @@ int main(void)
 	  switch_terminal();
 	  break;
 
+      case 'w':
+      case 'W':
+	  tstart_time = clock();
+	  increase_clarifier(panel);
+      	  is_call_rtl_fm = 1;
+	  break;
+
+      case 's':
+      case 'S':
+	  tstart_time = clock();
+	  decrease_clarifier(panel);
+      	  is_call_rtl_fm = 1;
+	  break;
+      
+      case 'x':
+      case 'X':
+	  tstart_time = clock();
+	  reset_clarifier(panel);
+      	  is_call_rtl_fm = 1;
+	  break;
+      
+  
     }
 
     tend_time = clock();
@@ -267,6 +295,7 @@ int main(void)
 
 	 tunning_status_off(panel);
 	 volume_off(panel);
+	 clarifier_off(panel);
 	 redrawwin(mainwin);
        }
        else
@@ -289,12 +318,17 @@ int main(void)
 char* build_rtl_command (char *buffer, ReceiverPanel *rp)
 {
   char sub_buffer[16];
+  float vfo = rp->vfo;
 
   strcat(buffer,"( ");
   strcat(buffer,RTL_FM_CMD);
   strcat(buffer,"-M");
   strcat(buffer,rp->rtl_mod);
-  snprintf(sub_buffer,16, "-f %.3fM ", rp->vfo);
+
+  if(rp->current_clarifier != 0) 
+    vfo += (float)rp->current_clarifier / 1000000.0f;
+
+  snprintf(sub_buffer,16, "-f %.3fM ", vfo);
   strcat(buffer, sub_buffer);
   
   /* Direct sample not needed for 24Mhz or higher */
@@ -367,6 +401,7 @@ void knob_turner(ReceiverPanel *rp)
   }
 
   change_receive_mode(rp, rp->receive_mode);
+  
   change_frequency(rp, rp->vfo);
   
 }
@@ -439,6 +474,7 @@ void init_panel(ReceiverPanel *rp)
   rp->custom_freq_step=  0;
   rp->volume = 50;
   rp->preamp_mode = 0;
+  rp->current_clarifier = 0;
 
   knob_turner(rp);
 
@@ -512,6 +548,13 @@ void switch_terminal()
 
 }
 
+void call_shutdown() 
+{
+   /* Ok, I know, this is a not an elegant way to shutdown the system, but for RPi works great! */
+   system("sudo shutdown -h now");
+
+}
+
 int get_preamp_vol_value(ReceiverPanel *rp)
 {
  
@@ -552,4 +595,34 @@ int get_preamp_vol_value(ReceiverPanel *rp)
 	return 0;	
    }
  
+}
+
+
+void increase_clarifier(ReceiverPanel *rp) 
+{
+   rp->current_clarifier += 10;
+
+   if (rp->current_clarifier > 1000)
+     rp->current_clarifier = 990;
+
+   clarifier_on(rp);
+
+}
+
+void decrease_clarifier(ReceiverPanel *rp)
+{
+   rp->current_clarifier -= 10;
+   if (rp->current_clarifier < -1000)
+     rp->current_clarifier = -990;
+
+   clarifier_on(rp);
+
+}
+
+void reset_clarifier(ReceiverPanel *rp)
+{
+   rp->current_clarifier = 0;
+
+   clarifier_off(rp);
+
 }
