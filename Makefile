@@ -34,18 +34,18 @@ all: objFolder $(PROJ_NAME)
 
 $(PROJ_NAME): $(OBJ)
 	@ echo 'Building binary using GCC linker: $@'
-	$(CC) $^ -o ./build/$@ -lncurses
+	$(CC) $^ -o ./build/$@ -lncurses -lpthread
 	@ echo 'Finished building binary:  $@'
 	@ echo  ' '
 
 ./build/objects/%.o: ./src/%.c ./src/%.h
 	@ echo 'Building target using GCC compiler: $<'
-	$(CC) $< $(CC_FLAGS) -o $@ -lncurses
+	$(CC) $< $(CC_FLAGS) -o $@ -lncurses -lpthread
 	@ echo ' '
 
 ./build/objects/main.o: ./src/main.c $(H_SOURCE)
 	@ echo 'Building target using GCC compiler: $< '
-	$(CC) $< $(CC_FLAGS) -o $@ -lncurses
+	$(CC) $< $(CC_FLAGS) -o $@ -lncurses -lpthread
 	@ echo ' '
 
 objFolder:

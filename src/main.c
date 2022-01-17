@@ -15,6 +15,8 @@
 #include <string.h>
 #include "frontend.h" 
 #include <time.h>
+#include "librtlfmevent.h"
+#include "getopt/getopt.h"
 
 /* =======================================
  * Prototypes
@@ -76,14 +78,15 @@ void call_shutdown();
 #define MODE_DEFAULT       RECEIVE_MODE_USB
 #define MODE_ID_DEFAULT    4
 #define LODASH_WAIT_TIME_MS 1000
-
+int	is_rtl_fm_x_enabled=0;
 
 /* =======================================
  * Main 
  * =======================================*/
-int main(void)
+int main(int argc, char **argv)
 {
   int c = 0,
+      opt = 0,
       lodash_time = 0,
       is_call_rtl_fm = 0,
       idmode = MODE_ID_DEFAULT,
@@ -100,16 +103,41 @@ int main(void)
   noecho();
 
   ReceiverPanel *panel = create_receiver_panel(mainwin, 0, 0);
-  
-  init_panel(panel);
-  call_rtl_fm(panel);
- 
+  last_rtl_fm_event = NULL;
+
   keypad(mainwin, TRUE);
   nodelay(mainwin, TRUE);
 
   tstart_time = clock();
   lodash_time = LODASH_WAIT_TIME_MS * (CLOCKS_PER_SEC/1000);
 
+
+  /**
+   * User options
+   **/
+  while ((opt = getopt(argc, argv, "e:hT")) != -1)   {
+    switch (opt) 
+    {
+      case 'e':
+	strcpy(rtl_fm_evt_file_path, optarg);
+	last_rtl_fm_event = new_rtl_fm_event(NULL);
+	/**
+   	 * Only enabled with my rtl_fm log event
+   	 * patch. Normal rtl_fm works with this app
+   	 * Qut s-meter and scan will not work
+   	 **/
+  	start_rtl_fm_event_listener(rtl_fm_evt_file_path);
+	is_rtl_fm_x_enabled = 1;
+	break;
+
+      default:
+	break;
+    }
+  }
+
+  init_panel(panel);
+  call_rtl_fm(panel);
+ 
   while ((c = getch()) != KEY_F(1))
   {
     switch(c)
@@ -304,6 +332,13 @@ int main(void)
 	 
 	 volume_off(panel);
 	 show_freq_step_scale(panel);
+
+	 if (is_rtl_fm_x_enabled == 1)
+	 {
+	   panel->lcd_smeter->rms = last_rtl_fm_event->event_value;
+	   update_smeter(panel->lcd_smeter);
+	 }
+
        }      
     }
     
@@ -328,7 +363,7 @@ char* build_rtl_command (char *buffer, ReceiverPanel *rp)
   if(rp->current_clarifier != 0) 
     vfo += (float)rp->current_clarifier / 1000000.0f;
 
-  snprintf(sub_buffer,16, "-f %.3fM ", vfo);
+  snprintf(sub_buffer,16, "-f %.6fM ", vfo);
   strcat(buffer, sub_buffer);
   
   /* Direct sample not needed for 24Mhz or higher */
@@ -343,13 +378,20 @@ char* build_rtl_command (char *buffer, ReceiverPanel *rp)
     strcat(buffer, "-g 50 -A fast -F 9");
   else
     strcat(buffer, "-g 50 -A std ");
+
+  if(is_rtl_fm_x_enabled == 1)
+  {
+    strcat(buffer, " -e ");
+    strcpy(sub_buffer,rtl_fm_evt_file_path);
+    strcat(buffer, sub_buffer);
+  }
+    
   strcat(buffer, "| aplay ");
   strcat(buffer, " -D pulse ");
   snprintf(sub_buffer, 16,"-r %d ",rp->rtl_sr);
   strcat(buffer, sub_buffer);
   strcat(buffer, "-f S16_LE -t raw ");
   strcat(buffer, ") > /dev/null 2>&1 &");
-
   return buffer;
 }
  

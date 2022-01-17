@@ -5,6 +5,7 @@
 #include "libdigit.h"
 #include "libreceivemode.h"
 #include "frontend.h"
+#include "libsmeter.h"
 
 /****************************************
   Structures
@@ -89,8 +90,11 @@ ReceiverPanel *create_receiver_panel(WINDOW *main, int y, int x)
    mvwprintw(main, y+3, x+2, "F.Stp:");
    show_freq_step_scale(lpanel);
 
-   /*mvwprintw(main,y+3, x+3, "VFO:");*/
-   lpanel->lcd_vfo = create_lcd(main,y+5, x+3);
+   mvwprintw(main,y+4, x+2,  "S-Met:");
+   lpanel->lcd_smeter = smeter_level(main, y+4,x+9);
+
+
+   lpanel->lcd_vfo = create_lcd(main,y+6, x+3);
    refresh();
 
    lpanel->tunning_status = subwin(main,1,12,y+3, maxx - 12);

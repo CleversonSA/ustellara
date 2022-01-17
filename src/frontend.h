@@ -3,6 +3,7 @@
 
 #include "libdigit.h"
 #include "libreceivemode.h"
+#include "libsmeter.h"
 
 /****************************************
  * Structures
@@ -18,6 +19,7 @@ typedef struct ReceiverPanelSt
   WINDOW         *wpreamp_mode;
   WINDOW	 *wfreq_step;
   WINDOW	 *wclarifier;
+  Smeter	 *lcd_smeter;
   float		 vfo;
   int		 receive_mode;
   char		 *rtl_mod;
@@ -39,7 +41,7 @@ typedef struct ReceiverPanelSt
 /****************************************
  * Globals
  * *************************************/
-#define APP_VERSION "0.7.5"
+#define APP_VERSION "0.8.0"
 
 /***************************************
  * Prototypes

@@ -1,0 +1,23 @@
+src/librtlfmevent.c: In function ‘parse_rtl_fm_event’:
+src/librtlfmevent.c:61:22: warning: assignment to ‘int’ from ‘char *’ makes integer from pointer without a cast [-Wint-conversion]
+     event_type_start = event_type;
+                      ^
+src/librtlfmevent.c:70:28: warning: assignment to ‘char *’ from ‘int’ makes pointer from integer without a cast [-Wint-conversion]
+     rtl_fm_evt->event_type = event_type_start;
+                            ^
+src/librtlfmevent.c:74:18: warning: assignment to ‘int’ from ‘char *’ makes integer from pointer without a cast [-Wint-conversion]
+     buffer_start = buffer;
+                  ^
+src/librtlfmevent.c:83:12: warning: assignment to ‘char *’ from ‘int’ makes pointer from integer without a cast [-Wint-conversion]
+     buffer = buffer_start;
+            ^
+src/librtlfmevent.c:89:18: warning: assignment to ‘int’ from ‘char *’ makes integer from pointer without a cast [-Wint-conversion]
+     buffer_start = buffer;
+                  ^
+src/librtlfmevent.c:100:12: warning: assignment to ‘char *’ from ‘int’ makes pointer from integer without a cast [-Wint-conversion]
+     buffer = buffer_start;
+            ^
+src/librtlfmevent.c: In function ‘update_rtl_fm_status’:
+src/librtlfmevent.c:108:34: warning: unused parameter ‘args’ [-Wunused-parameter]
+ void *update_rtl_fm_status(void *args)
+                            ~~~~~~^~~~
