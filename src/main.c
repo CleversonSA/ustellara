@@ -79,6 +79,8 @@ void call_shutdown();
 #define MODE_ID_DEFAULT    4
 #define LODASH_WAIT_TIME_MS 1000
 int	is_rtl_fm_x_enabled=0;
+int	is_custom_rtl_fparam_enabled=0;
+char    custom_rtl_fparam[255] = {0};
 
 /* =======================================
  * Main 
@@ -148,6 +150,7 @@ int main(int argc, char **argv)
       	  is_call_rtl_fm = 1;
 	  reset_clarifier(panel);
 	  tunning_status_on(panel);
+	  is_custom_rtl_fparam_enabled=0;
 	  break;
 
       case KEY_DOWN:
@@ -156,8 +159,19 @@ int main(int argc, char **argv)
       	  is_call_rtl_fm = 1;
 	  reset_clarifier(panel);
  	  tunning_status_on(panel);
+	  is_custom_rtl_fparam_enabled=0;
 	  break;
 
+      case 'C':
+      case 'c':
+	  tstart_time = clock();
+	  nodelay(mainwin, FALSE);
+	  set_custom_fparam(panel, custom_rtl_fparam, &is_custom_rtl_fparam_enabled);
+	  nodelay(mainwin, TRUE);
+      	  is_call_rtl_fm = 1;
+	  reset_clarifier(panel);
+	  knob_turner(panel);
+	  break;
       case 'A':
       case 'a':
       case KEY_LEFT:
@@ -335,8 +349,18 @@ int main(int argc, char **argv)
 
 	 if (is_rtl_fm_x_enabled == 1)
 	 {
+	   
 	   panel->lcd_smeter->rms = last_rtl_fm_event->event_value;
-	   update_smeter(panel->lcd_smeter);
+	   if (panel->lcd_smeter->rms >0)
+	      update_smeter(panel->lcd_smeter);
+
+	   if(is_custom_rtl_fparam_enabled == 1)	   {
+	      if(last_rtl_fm_event->frequency > 0.0f)
+	      {
+		panel->vfo = last_rtl_fm_event->frequency;
+                change_frequency(panel, panel->vfo);
+	      }
+	   }
 	 }
 
        }      
@@ -352,7 +376,7 @@ int main(int argc, char **argv)
  *==========================================*/
 char* build_rtl_command (char *buffer, ReceiverPanel *rp)
 {
-  char sub_buffer[16];
+  char sub_buffer[255];
   float vfo = rp->vfo;
 
   strcat(buffer,"( ");
@@ -363,9 +387,19 @@ char* build_rtl_command (char *buffer, ReceiverPanel *rp)
   if(rp->current_clarifier != 0) 
     vfo += (float)rp->current_clarifier / 1000000.0f;
 
-  snprintf(sub_buffer,16, "-f %.6fM ", vfo);
-  strcat(buffer, sub_buffer);
-  
+  if(is_custom_rtl_fparam_enabled == 1)
+  {
+     strcpy(sub_buffer, " -f ");
+     strcat(sub_buffer, custom_rtl_fparam);
+     strcat(sub_buffer, " ");
+     strcat(buffer, sub_buffer);
+  } 
+  else
+  {
+     snprintf(sub_buffer,16, "-f %.6fM ", vfo);
+     strcat(buffer, sub_buffer);
+  }
+
   /* Direct sample not needed for 24Mhz or higher */
   if(rp->vfo < DIRECT_SMP_MAX_FREQ )
     strcat(buffer, DIRECT_SMP);
@@ -375,7 +409,7 @@ char* build_rtl_command (char *buffer, ReceiverPanel *rp)
   snprintf(sub_buffer, 16,"-s %d ",rp->rtl_bw);
   strcat(buffer, sub_buffer);
   if(rp->vfo < DIRECT_SMP_MAX_FREQ )
-    strcat(buffer, "-g 50 -A fast -F 9");
+    strcat(buffer, "-g 50 -A fast -F 0");
   else
     strcat(buffer, "-g 50 -A std ");
 
@@ -384,14 +418,21 @@ char* build_rtl_command (char *buffer, ReceiverPanel *rp)
     strcat(buffer, " -e ");
     strcpy(sub_buffer,rtl_fm_evt_file_path);
     strcat(buffer, sub_buffer);
+  
+    if (is_custom_rtl_fparam_enabled == 1)
+      strcat(buffer, " -L 10000 ");
+  
   }
-    
+
   strcat(buffer, "| aplay ");
   strcat(buffer, " -D pulse ");
   snprintf(sub_buffer, 16,"-r %d ",rp->rtl_sr);
   strcat(buffer, sub_buffer);
   strcat(buffer, "-f S16_LE -t raw ");
   strcat(buffer, ") > /dev/null 2>&1 &");
+  //mvprintw(13,1,"%s", buffer);
+  //strcat(buffer, ") &");
+  
   return buffer;
 }
  

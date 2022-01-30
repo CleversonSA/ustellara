@@ -41,7 +41,7 @@ typedef struct ReceiverPanelSt
 /****************************************
  * Globals
  * *************************************/
-#define APP_VERSION "0.8.0"
+#define APP_VERSION "0.8.7"
 
 /***************************************
  * Prototypes
@@ -61,5 +61,5 @@ void preamp_mode_off(ReceiverPanel *panel);
 void show_freq_step_scale(ReceiverPanel *panel);
 void clarifier_on(ReceiverPanel *panel);
 void clarifier_off(ReceiverPanel *panel);
-
+void set_custom_fparam(ReceiverPanel *panel, char *crfparam, int *crfparamflag);
 #endif /* FRONTEND_H_ */

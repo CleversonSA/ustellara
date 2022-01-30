@@ -334,4 +334,32 @@ void clarifier_on(ReceiverPanel *panel)
    wattroff(panel->wclarifier,COLOR_PAIR(RECEIVE_COLOR_OFF) | A_BOLD);
    wrefresh(panel->wclarifier);
 
+} 
+
+void set_custom_fparam(ReceiverPanel *panel, char *crfparam, int *crfparamflag)
+{
+  int i=0, r=0;
+
+  for(i=0; i<panel->maxx; i++)
+    mvprintw(panel->yinput, i, " ");
+ 
+  nodelay(stdscr, FALSE);
+  echo(); 
+  mvprintw(panel->yinput, panel->xinput, "Enter custom -f param: ");
+  refresh();
+  r = scanw("%s", crfparam);
+  nodelay(stdscr, TRUE);
+  noecho();
+
+  for(i=0; i<panel->maxx; i++)
+    mvprintw(panel->yinput, i, " ");
+   
+  if(strcmp(crfparam, "") == 0)
+    *crfparamflag = 0;
+  else
+    *crfparamflag = 1;
+ 
+  
 }
+
+

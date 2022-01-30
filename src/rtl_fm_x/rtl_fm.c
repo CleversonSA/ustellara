@@ -84,7 +84,7 @@
 #define AUTO_GAIN			-100
 #define BUFFER_DUMP			4096
 
-#define FREQUENCIES_LIMIT		1000
+#define FREQUENCIES_LIMIT		100000
 #define LOG_EVENT_WATCHDOG_MS		200
 
 static volatile int do_exit = 0;
@@ -111,6 +111,7 @@ struct dongle_state
 	int      direct_sampling;
 	int      mute;
 	struct demod_state *demod_target;
+	uint32_t freq_diff;
 };
 
 struct demod_state
@@ -372,8 +373,9 @@ void log_full_demod(struct event_file_log *eflog, char *evt_type, int rms, struc
 {
 	char ebuffer[30];
 	float center_frequency = (float)(rtlsdr_get_center_freq(d->dev))/1e6;
-
-	snprintf(ebuffer,40,"%3d|%.6f",rms, center_frequency);
+	float fdiff = (float)d->freq_diff / 1e6;
+	float actual_freq = center_frequency - fdiff;
+	snprintf(ebuffer,40,"%d|%.6f",rms, actual_freq);
 	lprintevtf(eflog, evt_type,ebuffer); 
 
 }
@@ -969,6 +971,10 @@ static void *output_thread_fn(void *arg)
 
 static void optimal_settings(int freq, int rate)
 {
+	// For future hacks: this function is called everytime
+	// a frequency is requested, even on one frequency
+	// either frequency scanner
+
 	// giant ball of hacks
 	// seems unable to do a single pass, 2:1
 	int capture_freq, capture_rate;
@@ -992,6 +998,7 @@ static void optimal_settings(int freq, int rate)
 		dm->output_scale = 1;}
 	d->freq = (uint32_t)capture_freq;
 	d->rate = (uint32_t)capture_rate;
+	d->freq_diff = (uint32_t)capture_freq - (uint32_t)freq;
 }
 
 static void *controller_thread_fn(void *arg)
@@ -1000,16 +1007,20 @@ static void *controller_thread_fn(void *arg)
 	// might be no good using a controller thread if retune/rate blocks
 	int i;
 	struct controller_state *s = arg;
+	
 
 	if (s->wb_mode) {
 		for (i=0; i < s->freq_len; i++) {
-			s->freqs[i] += 16000;}
+			s->freqs[i] += 16000;
+		}
 	}
 
 	/* set up primary channel */
 	optimal_settings(s->freqs[0], demod.rate_in);
+
 	if (dongle.direct_sampling) {
 		verbose_direct_sampling(dongle.dev, dongle.direct_sampling);}
+
 	if (dongle.offset_tuning) {
 		verbose_offset_tuning(dongle.dev);}
 
@@ -1023,6 +1034,7 @@ static void *controller_thread_fn(void *arg)
 	/* Set the sample rate */
 	verbose_set_sample_rate(dongle.dev, dongle.rate);
 	fprintf(stderr, "Output at %u Hz.\n", demod.rate_in/demod.post_downsample);
+
 
 	while (!do_exit) {
 		safe_cond_wait(&s->hop, &s->hop_m);

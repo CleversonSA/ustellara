@@ -181,7 +181,7 @@ void start_rtl_fm_event_listener(char *re_file_path)
 
    strcpy(rtl_fm_evt_file_path, re_file_path);
 
-   /* Simple check if logf file exists */
+   /* Simple check if logf file exists 
    FILE *fp = fopen(rtl_fm_evt_file_path, "r");
    if (fp == NULL)
    {
@@ -189,8 +189,7 @@ void start_rtl_fm_event_listener(char *re_file_path)
       return;
    }
    else
-      fclose(fp);
-
+      fclose(fp);*/
 
    t_c_status = pthread_create (&rtl_fm_evt_listener, NULL, update_rtl_fm_status,(void *)(NULL));
    if(t_c_status != 0)
