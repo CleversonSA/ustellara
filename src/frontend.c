@@ -338,7 +338,7 @@ void clarifier_on(ReceiverPanel *panel)
 
 void set_custom_fparam(ReceiverPanel *panel, char *crfparam, int *crfparamflag)
 {
-  int i=0, r=0;
+  int i=0;
 
   for(i=0; i<panel->maxx; i++)
     mvprintw(panel->yinput, i, " ");
@@ -347,7 +347,7 @@ void set_custom_fparam(ReceiverPanel *panel, char *crfparam, int *crfparamflag)
   echo(); 
   mvprintw(panel->yinput, panel->xinput, "Enter custom -f param: ");
   refresh();
-  r = scanw("%s", crfparam);
+  scanw("%s", crfparam);
   nodelay(stdscr, TRUE);
   noecho();
 

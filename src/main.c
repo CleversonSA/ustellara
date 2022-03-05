@@ -17,6 +17,7 @@
 #include <time.h>
 #include "librtlfmevent.h"
 #include "getopt/getopt.h"
+#include "libvoice.h"
 
 /* =======================================
  * Prototypes
@@ -81,6 +82,8 @@ void call_shutdown();
 int	is_rtl_fm_x_enabled=0;
 int	is_custom_rtl_fparam_enabled=0;
 char    custom_rtl_fparam[255] = {0};
+int	is_voice_enabled=0;
+VoiceSettings *voice_settings;
 
 /* =======================================
  * Main 
@@ -117,7 +120,7 @@ int main(int argc, char **argv)
   /**
    * User options
    **/
-  while ((opt = getopt(argc, argv, "e:hT")) != -1)   {
+  while ((opt = getopt(argc, argv, "e:v:hT")) != -1)   {
     switch (opt) 
     {
       case 'e':
@@ -130,6 +133,14 @@ int main(int argc, char **argv)
    	 **/
   	start_rtl_fm_event_listener(rtl_fm_evt_file_path);
 	is_rtl_fm_x_enabled = 1;
+	break;
+
+      case 'v':
+	is_voice_enabled = 1;
+	voice_settings = malloc(sizeof(VoiceSettings));
+	voice_settings->speech_amplitude = atoi(optarg);
+	if (voice_settings->speech_amplitude < 0 || voice_settings->speech_amplitude > 100)
+	    voice_settings->speech_amplitude = 20;
 	break;
 
       default:
@@ -151,6 +162,8 @@ int main(int argc, char **argv)
 	  reset_clarifier(panel);
 	  tunning_status_on(panel);
 	  is_custom_rtl_fparam_enabled=0;
+	  if (is_voice_enabled)
+	    speak_frequency(voice_settings, panel);
 	  break;
 
       case KEY_DOWN:
@@ -160,7 +173,9 @@ int main(int argc, char **argv)
 	  reset_clarifier(panel);
  	  tunning_status_on(panel);
 	  is_custom_rtl_fparam_enabled=0;
-	  break;
+	  if (is_voice_enabled)
+	    speak_frequency(voice_settings, panel);
+  	  break;
 
       case 'C':
       case 'c':
@@ -171,6 +186,8 @@ int main(int argc, char **argv)
       	  is_call_rtl_fm = 1;
 	  reset_clarifier(panel);
 	  knob_turner(panel);
+	  if (is_voice_enabled)
+	    speak_scan(voice_settings);
 	  break;
       case 'A':
       case 'a':
@@ -181,6 +198,8 @@ int main(int argc, char **argv)
 	  panel->receive_mode=rmodes[idmode];
 	  is_call_rtl_fm = 1;
 	  knob_turner(panel);
+	  if (is_voice_enabled)
+	    speak_rec_mode(voice_settings, panel);
 	  break;
 
       case 'D':
@@ -192,6 +211,8 @@ int main(int argc, char **argv)
 	  panel->receive_mode=rmodes[idmode];
 	  is_call_rtl_fm = 1;
 	  knob_turner(panel);
+	  if (is_voice_enabled)
+	    speak_rec_mode(voice_settings, panel);
 	  break;
 
       case KEY_END:
@@ -284,6 +305,9 @@ int main(int argc, char **argv)
 	  }
 	  panel->volume = 0;
 	  increase_volume(panel);
+	  if (is_voice_enabled)
+	    speak_preamp(voice_settings, panel);
+
 	  break;
       case '=':
       case '+':
@@ -305,6 +329,8 @@ int main(int argc, char **argv)
 	  tstart_time = clock();
 	  increase_clarifier(panel);
       	  is_call_rtl_fm = 1;
+	  if (is_voice_enabled)
+	    speak_clarifier(voice_settings, panel);
 	  break;
 
       case 's':
@@ -312,6 +338,8 @@ int main(int argc, char **argv)
 	  tstart_time = clock();
 	  decrease_clarifier(panel);
       	  is_call_rtl_fm = 1;
+	  if (is_voice_enabled)
+	    speak_clarifier(voice_settings, panel);
 	  break;
       
       case 'x':
@@ -319,9 +347,15 @@ int main(int argc, char **argv)
 	  tstart_time = clock();
 	  reset_clarifier(panel);
       	  is_call_rtl_fm = 1;
+	  if (is_voice_enabled)
+	    speak_cancelled(voice_settings);
 	  break;
-      
-  
+
+      case 'i': 
+      case 'I':
+	  if(is_voice_enabled)
+	    speak_frequency_status(voice_settings, panel);
+	  break;
     }
 
     tend_time = clock();
@@ -354,7 +388,8 @@ int main(int argc, char **argv)
 	   if (panel->lcd_smeter->rms >0)
 	      update_smeter(panel->lcd_smeter);
 
-	   if(is_custom_rtl_fparam_enabled == 1)	   {
+	   if(is_custom_rtl_fparam_enabled == 1)	   
+	   {
 	      if(last_rtl_fm_event->frequency > 0.0f)
 	      {
 		panel->vfo = last_rtl_fm_event->frequency;

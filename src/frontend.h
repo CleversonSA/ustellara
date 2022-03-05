@@ -41,7 +41,7 @@ typedef struct ReceiverPanelSt
 /****************************************
  * Globals
  * *************************************/
-#define APP_VERSION "0.8.7"
+#define APP_VERSION "0.9.0"
 
 /***************************************
  * Prototypes
