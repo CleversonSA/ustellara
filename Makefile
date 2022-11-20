@@ -24,7 +24,8 @@ CC=gcc
 # Flags for compiler
 CC_FLAGS=-c	\
 	 -W	\
-	 -Wall	
+	 -Wall	\
+	 -fcommon
 
 # Command used at clean target
 RM = rm -rf
