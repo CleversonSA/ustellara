@@ -45,62 +45,65 @@ void parse_rtl_fm_event(RtlFMEvent *rtl_fm_evt, char *event_data)
 
 
     rtl_fm_evt->commited = 0;
+    char delimiter[] = "|";
+    char *buffer = 0;
 
-    /**
-     * \\|||//  Remember, array is array
-     * d O o b  not to be treated like a 
-     *  \ o /   pointer, use malloc
-     */
-    char* event_type = malloc(sizeof(char) * 10);
-    char* buffer;
-    int	  event_type_start = 0,
-	  buffer_start = 0;
+    if (event_data == 0) {
 
-    /* Parse event type */
-    rtl_fm_evt->event_type = event_type;
-    event_type_start = event_type;
-    while(*event_data != '|')
-    {
-    	*(rtl_fm_evt->event_type)=*event_data;
-	event_data++;
-	(rtl_fm_evt->event_type)++;
+      rtl_fm_evt->event_type = "";
+      rtl_fm_evt->event_value = 0;
+      rtl_fm_evt->frequency = 0.0;
+      rtl_fm_evt->commited = 1;
+      return;
+
     }
-    event_data++;
-    *(rtl_fm_evt->event_type) = '\0';
-    rtl_fm_evt->event_type = event_type_start;
 
+    // Get the first token
+    char *token = strtok(event_data, delimiter);
+ 
+    // Event type
+    if (token != 0) {
+
+      buffer = malloc(sizeof(char) * 10);
+      *buffer = '\0';
+      strcpy(buffer, token);
+      rtl_fm_evt->event_type = buffer;
+      free(buffer);
+      token = strtok(NULL, delimiter);
+
+    }
+    
     /* Parse event value */
-    buffer = malloc(sizeof(char)*10);
-    buffer_start = buffer;
-    while(*event_data != '|')
-    {	
-       	*buffer = *event_data;
-	buffer++;
-	event_data++;
+    if (token != 0) {
+
+      buffer = malloc(sizeof(char)*10);
+      *buffer = '\0';
+      strcpy(buffer, token);
+      rtl_fm_evt->event_value = atoi(buffer);
+      free(buffer);
+      token = strtok(NULL, delimiter);
+
+    } else {
+
+      rtl_fm_evt->event_value = 0;
+
     }
-    event_data++;
-    *buffer = '\0';
-    buffer = buffer_start;
-    rtl_fm_evt->event_value = atoi(buffer);
-    free(buffer);
 
     /* Parse event freq */
-    buffer = malloc(sizeof(char)*15);
-    buffer_start = buffer;
-    while(*event_data != '|' &&
-	  *event_data != '\0' && 
-	  *event_data != '\n')
-    {	
-       	*buffer = *event_data;
-	buffer++;
-	event_data++;
-    }
-    event_data++;
-    *buffer = '\0';
-    buffer = buffer_start;
-    rtl_fm_evt->frequency = atof(buffer);
-    free(buffer);
+    if (token != 0) {
 
+      buffer = malloc(sizeof(char)*10);
+      *buffer = '\0';
+      strcpy(buffer, token);
+      rtl_fm_evt->frequency = atoi(buffer);
+      free(buffer); 
+
+    } else {
+
+      rtl_fm_evt->frequency = 0.00;
+
+    }
+    
     rtl_fm_evt->commited = 1;
 }
 
@@ -200,7 +203,7 @@ void start_rtl_fm_event_listener(char *re_file_path)
    {
       /* Try avoid blocking */
       if(pthread_detach(rtl_fm_evt_listener)) {
-	fprintf(stderr, "ERROR: Could not deatch thread\n");
+	      fprintf(stderr, "ERROR: Could not deatch thread\n");
       }
    }
 
@@ -225,6 +228,7 @@ RtlFMEvent *new_rtl_fm_event(RtlFMEvent *event)
      event->last_millis = 0;
   }
   
+
   /**
    * mmmmmmm  In C, unlike Java, Pyhton, NodeJS
    * d - - b  you have to initialize the pointer

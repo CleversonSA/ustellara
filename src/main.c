@@ -124,24 +124,24 @@ int main(int argc, char **argv)
     switch (opt) 
     {
       case 'e':
-	strcpy(rtl_fm_evt_file_path, optarg);
-	last_rtl_fm_event = new_rtl_fm_event(NULL);
-	/**
-   	 * Only enabled with my rtl_fm log event
-   	 * patch. Normal rtl_fm works with this app
-   	 * Qut s-meter and scan will not work
-   	 **/
-  	start_rtl_fm_event_listener(rtl_fm_evt_file_path);
-	is_rtl_fm_x_enabled = 1;
-	break;
+        strcpy(rtl_fm_evt_file_path, optarg);
+        last_rtl_fm_event = new_rtl_fm_event(NULL);
+        /**
+          * Only enabled with my rtl_fm log event
+          * patch. Normal rtl_fm works with this app
+          * Qut s-meter and scan will not work
+          **/
+        start_rtl_fm_event_listener(rtl_fm_evt_file_path);
+        is_rtl_fm_x_enabled = 1;
+        break;
 
       case 'v':
-	is_voice_enabled = 1;
-	voice_settings = malloc(sizeof(VoiceSettings));
-	voice_settings->speech_amplitude = atoi(optarg);
-	if (voice_settings->speech_amplitude < 0 || voice_settings->speech_amplitude > 100)
-	    voice_settings->speech_amplitude = 20;
-	break;
+        is_voice_enabled = 1;
+        voice_settings = malloc(sizeof(VoiceSettings));
+        voice_settings->speech_amplitude = atoi(optarg);
+        if (voice_settings->speech_amplitude < 0 || voice_settings->speech_amplitude > 100)
+            voice_settings->speech_amplitude = 20;
+        break;
 
       default:
 	break;
@@ -156,206 +156,206 @@ int main(int argc, char **argv)
     switch(c)
     {
       case KEY_UP:
- 	  tstart_time = clock();
-	  increase_frequency(panel);
-      	  is_call_rtl_fm = 1;
-	  reset_clarifier(panel);
-	  tunning_status_on(panel);
-	  is_custom_rtl_fparam_enabled=0;
-	  if (is_voice_enabled)
-	    speak_frequency(voice_settings, panel);
-	  break;
+        tstart_time = clock();
+        increase_frequency(panel);
+              is_call_rtl_fm = 1;
+        reset_clarifier(panel);
+        tunning_status_on(panel);
+        is_custom_rtl_fparam_enabled=0;
+        if (is_voice_enabled)
+          speak_frequency(voice_settings, panel);
+        break;
 
       case KEY_DOWN:
-	  tstart_time = clock();
-	  decrease_frequency(panel);
-      	  is_call_rtl_fm = 1;
-	  reset_clarifier(panel);
- 	  tunning_status_on(panel);
-	  is_custom_rtl_fparam_enabled=0;
-	  if (is_voice_enabled)
-	    speak_frequency(voice_settings, panel);
-  	  break;
+        tstart_time = clock();
+        decrease_frequency(panel);
+              is_call_rtl_fm = 1;
+        reset_clarifier(panel);
+        tunning_status_on(panel);
+        is_custom_rtl_fparam_enabled=0;
+        if (is_voice_enabled)
+          speak_frequency(voice_settings, panel);
+        break;
 
       case 'C':
       case 'c':
-	  tstart_time = clock();
-	  nodelay(mainwin, FALSE);
-	  set_custom_fparam(panel, custom_rtl_fparam, &is_custom_rtl_fparam_enabled);
-	  nodelay(mainwin, TRUE);
-      	  is_call_rtl_fm = 1;
-	  reset_clarifier(panel);
-	  knob_turner(panel);
-	  if (is_voice_enabled)
-	    speak_scan(voice_settings);
-	  break;
+          tstart_time = clock();
+          nodelay(mainwin, FALSE);
+          set_custom_fparam(panel, custom_rtl_fparam, &is_custom_rtl_fparam_enabled);
+          nodelay(mainwin, TRUE);
+                is_call_rtl_fm = 1;
+          reset_clarifier(panel);
+          knob_turner(panel);
+          if (is_voice_enabled)
+            speak_scan(voice_settings);
+          break;
       case 'A':
       case 'a':
       case KEY_LEFT:
-	  tstart_time = clock();
-	  idmode--;
-	  if(idmode < 0) idmode=4;
-	  panel->receive_mode=rmodes[idmode];
-	  is_call_rtl_fm = 1;
-	  knob_turner(panel);
-	  if (is_voice_enabled)
-	    speak_rec_mode(voice_settings, panel);
-	  break;
+          tstart_time = clock();
+          idmode--;
+          if(idmode < 0) idmode=4;
+          panel->receive_mode=rmodes[idmode];
+          is_call_rtl_fm = 1;
+          knob_turner(panel);
+          if (is_voice_enabled)
+            speak_rec_mode(voice_settings, panel);
+          break;
 
       case 'D':
       case 'd':
       case KEY_RIGHT:
-	  tstart_time = clock();
-	  idmode++;
-	  if(idmode > ((int)sizeof(rmodes)/(int)sizeof(int))-1) idmode=0;
-	  panel->receive_mode=rmodes[idmode];
-	  is_call_rtl_fm = 1;
-	  knob_turner(panel);
-	  if (is_voice_enabled)
-	    speak_rec_mode(voice_settings, panel);
-	  break;
+          tstart_time = clock();
+          idmode++;
+          if(idmode > ((int)sizeof(rmodes)/(int)sizeof(int))-1) idmode=0;
+          panel->receive_mode=rmodes[idmode];
+          is_call_rtl_fm = 1;
+          knob_turner(panel);
+          if (is_voice_enabled)
+            speak_rec_mode(voice_settings, panel);
+          break;
 
       case KEY_END:
-	  call_shutdown();
-	  break;
+        call_shutdown();
+        break;
 
       case 'f':
       case 'F':
-	  tstart_time = clock();
-	  nodelay(mainwin, FALSE);
-	  goto_frequency(panel);
-	  nodelay(mainwin, TRUE);
-      	  is_call_rtl_fm = 1;
-	  reset_clarifier(panel);
-	  knob_turner(panel);
-	  break;
+        tstart_time = clock();
+        nodelay(mainwin, FALSE);
+        goto_frequency(panel);
+        nodelay(mainwin, TRUE);
+              is_call_rtl_fm = 1;
+        reset_clarifier(panel);
+        knob_turner(panel);
+        break;
 
       case 'l':
-	  tstart_time = clock();
-	  nodelay(mainwin, FALSE);
-	  set_squelch_level(panel);
-	  nodelay(mainwin, TRUE);
-	  is_call_rtl_fm = 1;
-	  knob_turner(panel);
-	  show_squelch_level(panel);
-	  break;
+        tstart_time = clock();
+        nodelay(mainwin, FALSE);
+        set_squelch_level(panel);
+        nodelay(mainwin, TRUE);
+        is_call_rtl_fm = 1;
+        knob_turner(panel);
+        show_squelch_level(panel);
+        break;
 
       case 'L':
-	  tstart_time = clock();
-	  panel->sqlevel=0;
-	  is_call_rtl_fm = 1;
-	  break;
+        tstart_time = clock();
+        panel->sqlevel=0;
+        is_call_rtl_fm = 1;
+        break;
       case 'R':
       case 'r':
- 	  tstart_time = clock();
-	  is_call_rtl_fm = 1;
-	  break;
+        tstart_time = clock();
+        is_call_rtl_fm = 1;
+        break;
 
       case '7':
-	  panel->current_freq_step = 1000.0;
-	  panel->custom_freq_step = 1;
-	  break;
+        panel->current_freq_step = 1000.0;
+        panel->custom_freq_step = 1;
+        break;
       case '6':
-	  panel->current_freq_step = 100.0;
-	  panel->custom_freq_step = 1;
-	  break;
+        panel->current_freq_step = 100.0;
+        panel->custom_freq_step = 1;
+        break;
       case '5':
-	  panel->current_freq_step = 10.0;
-	  panel->custom_freq_step = 1;
-	  break;
+        panel->current_freq_step = 10.0;
+        panel->custom_freq_step = 1;
+        break;
       case '4':
-	  panel->current_freq_step = 1.0;
-	  panel->custom_freq_step = 1;
-          break;
+        panel->current_freq_step = 1.0;
+        panel->custom_freq_step = 1;
+        break;
       case '3':
-	  panel->current_freq_step = 0.1;
-	  panel->custom_freq_step = 1;
-          break;
+        panel->current_freq_step = 0.1;
+        panel->custom_freq_step = 1;
+        break;
       case '2':
-	  panel->current_freq_step = 0.01;
-	  panel->custom_freq_step = 1;
-	  break;
+        panel->current_freq_step = 0.01;
+        panel->custom_freq_step = 1;
+        break;
       case '1':
-	  panel->current_freq_step = 0.001;
-	  panel->custom_freq_step = 1;
-	  break;
+        panel->current_freq_step = 0.001;
+        panel->custom_freq_step = 1;
+        break;
       case '0':
-	  panel->custom_freq_step = 0;
-	  break;
+        panel->custom_freq_step = 0;
+        break;
       case 'n':
       case 'N':
-	  panel->volume = 50;
-	  break;
+        panel->volume = 50;
+        break;
       case 'm':
       case 'M':
-	  panel->volume = -1;
-	  decrease_volume(panel);
-	  break;
+        panel->volume = -1;
+        decrease_volume(panel);
+        break;
       case 'p':
       case 'P':
-	  if (panel->preamp_mode==0)
-	  {
-	    panel->preamp_mode = 1;
-	    preamp_mode_on(panel);
-	  }
-	  else
-	  {
-            panel->preamp_mode = 0;
-	    preamp_mode_off(panel);
-	  }
-	  panel->volume = 0;
-	  increase_volume(panel);
-	  if (is_voice_enabled)
-	    speak_preamp(voice_settings, panel);
+        if (panel->preamp_mode==0)
+        {
+          panel->preamp_mode = 1;
+          preamp_mode_on(panel);
+        }
+        else
+        {
+                panel->preamp_mode = 0;
+          preamp_mode_off(panel);
+        }
+        panel->volume = 0;
+        increase_volume(panel);
+        if (is_voice_enabled)
+          speak_preamp(voice_settings, panel);
 
-	  break;
+        break;
       case '=':
       case '+':
-	  increase_volume(panel);
-	  break;
+        increase_volume(panel);
+        break;
       case '-':
-	  decrease_volume(panel);
-	  break;
-      /* I really hate to do this, since
-       * my mechanical keyboard is not
-       * supported in linux and I don't
-       * have the fn keys supported */
+        decrease_volume(panel);
+        break;
+          /* I really hate to do this, since
+          * my mechanical keyboard is not
+          * supported in linux and I don't
+          * have the fn keys supported */
       case 'K':
-	  switch_terminal();
-	  break;
+        switch_terminal();
+        break;
 
       case 'w':
       case 'W':
-	  tstart_time = clock();
-	  increase_clarifier(panel);
-      	  is_call_rtl_fm = 1;
-	  if (is_voice_enabled)
-	    speak_clarifier(voice_settings, panel);
-	  break;
+        tstart_time = clock();
+        increase_clarifier(panel);
+              is_call_rtl_fm = 1;
+        if (is_voice_enabled)
+          speak_clarifier(voice_settings, panel);
+        break;
 
       case 's':
       case 'S':
-	  tstart_time = clock();
-	  decrease_clarifier(panel);
-      	  is_call_rtl_fm = 1;
-	  if (is_voice_enabled)
-	    speak_clarifier(voice_settings, panel);
-	  break;
+        tstart_time = clock();
+        decrease_clarifier(panel);
+              is_call_rtl_fm = 1;
+        if (is_voice_enabled)
+          speak_clarifier(voice_settings, panel);
+        break;
       
       case 'x':
       case 'X':
-	  tstart_time = clock();
-	  reset_clarifier(panel);
-      	  is_call_rtl_fm = 1;
-	  if (is_voice_enabled)
-	    speak_cancelled(voice_settings);
-	  break;
+        tstart_time = clock();
+        reset_clarifier(panel);
+              is_call_rtl_fm = 1;
+        if (is_voice_enabled)
+          speak_cancelled(voice_settings);
+        break;
 
       case 'i': 
       case 'I':
-	  if(is_voice_enabled)
-	    speak_frequency_status(voice_settings, panel);
-	  break;
+        if(is_voice_enabled)
+          speak_frequency_status(voice_settings, panel);
+        break;
     }
 
     tend_time = clock();
@@ -367,37 +367,36 @@ int main(int argc, char **argv)
        {
          call_rtl_fm(panel);
          tstart_time = tend_time = clock();
-         is_call_rtl_fm = 0;
+          is_call_rtl_fm = 0;
 
-	 tunning_status_off(panel);
-	 volume_off(panel);
-	 clarifier_off(panel);
-	 redrawwin(mainwin);
+          tunning_status_off(panel);
+          volume_off(panel);
+          clarifier_off(panel);
+          redrawwin(mainwin);
        }
        else
        {
-         tstart_time = tend_time = clock();
-	 
-	 volume_off(panel);
-	 show_freq_step_scale(panel);
+          tstart_time = tend_time = clock();
+          
+          volume_off(panel);
+          show_freq_step_scale(panel);
 
-	 if (is_rtl_fm_x_enabled == 1)
-	 {
-	   
-	   panel->lcd_smeter->rms = last_rtl_fm_event->event_value;
-	   if (panel->lcd_smeter->rms >0)
-	      update_smeter(panel->lcd_smeter);
+          if (is_rtl_fm_x_enabled == 1)
+          {
+            
+            panel->lcd_smeter->rms = last_rtl_fm_event->event_value;
+            if (panel->lcd_smeter->rms >0)
+                update_smeter(panel->lcd_smeter);
 
-	   if(is_custom_rtl_fparam_enabled == 1)	   
-	   {
-	      if(last_rtl_fm_event->frequency > 0.0f)
-	      {
-		panel->vfo = last_rtl_fm_event->frequency;
-                change_frequency(panel, panel->vfo);
-	      }
-	   }
-	 }
-
+            if(is_custom_rtl_fparam_enabled == 1)	   
+            {
+                if(last_rtl_fm_event->frequency > 0.0f)
+                {
+            panel->vfo = last_rtl_fm_event->frequency;
+                        change_frequency(panel, panel->vfo);
+                }
+            }
+          }
        }      
     }
     
@@ -412,9 +411,15 @@ int main(int argc, char **argv)
 char* build_rtl_command (char *buffer, ReceiverPanel *rp)
 {
   char sub_buffer[255];
+  //const char* rtl_dir = getenv("USTELLARA_RTL_FM_DIR");
   float vfo = rp->vfo;
 
-  strcat(buffer,"( ");
+  strcat(buffer,"(");
+  /*if (rtl_dir != 0) {
+    strcat(buffer,"cd ");
+    strcat(buffer,rtl_dir);
+    strcat(buffer," && ");
+  } */
   strcat(buffer,RTL_FM_CMD);
   strcat(buffer,"-M");
   strcat(buffer,rp->rtl_mod);
@@ -594,6 +599,8 @@ void init_panel(ReceiverPanel *rp)
   rp->preamp_mode = 0;
   rp->current_clarifier = 0;
 
+  
+
   knob_turner(rp);
 
 }
@@ -607,12 +614,14 @@ void call_rtl_fm(ReceiverPanel *rp)
   /* PTBR: Evita o dedinho nervoso */
   strcpy(cmd3, cmd);
   system("killall -INT rtl_fm  > /dev/null 2>&1");
+
   clock_t start_time = clock();
   int milli = 1000 * (CLOCKS_PER_SEC/1000);
   while(clock() < start_time + milli)
 	    ;
   /* knob_turner(rp);*/
   system("killall -INT rtl_fm > /dev/null 2>&1");
+  
   build_rtl_command(cmd3, rp);
   system(cmd3);
   
@@ -629,7 +638,11 @@ void increase_volume(ReceiverPanel *rp) {
    snprintf(sub_buffer, 16,"%d%%", rp->volume+get_preamp_vol_value(rp));
  
    /* strcat(cmd, "amixer sset 'Master' ");*/
-   strcat(cmd, "pactl -- set-sink-volume $(pacmd list-sinks | grep \"*\" | grep \"index\" | awk '{ print $3 }') ");
+   /*strcat(cmd, "pactl -- set-sink-volume $(pacmd list-sinks | grep \"*\" | grep \"index\" | awk '{ print $3 }') ");
+   strcat(cmd, sub_buffer);
+   strcat(cmd, " > /dev/null 2>&1");*/
+   
+   strcat(cmd, "amixer set Master ");
    strcat(cmd, sub_buffer);
    strcat(cmd, " > /dev/null 2>&1");
    system(cmd);
@@ -651,7 +664,11 @@ void decrease_volume(ReceiverPanel *rp)
    else
       snprintf(sub_buffer, 16,"%d%%", rp->volume);
   /* strcat(cmd, "amixer sset 'Master' ");*/
-   strcat(cmd, "pactl -- set-sink-volume $(pacmd list-sinks | grep \"*\" | grep \"index\" | awk '{ print $3 }') "); 
+  /* strcat(cmd, "pactl -- set-sink-volume $(pacmd list-sinks | grep \"*\" | grep \"index\" | awk '{ print $3 }') "); 
+   strcat(cmd, sub_buffer);
+   strcat(cmd, " > /dev/null 2>&1"); */
+   
+   strcat(cmd, "amixer set Master ");
    strcat(cmd, sub_buffer);
    strcat(cmd, " > /dev/null 2>&1");
 
