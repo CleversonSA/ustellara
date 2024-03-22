@@ -1,23 +1,33 @@
-src/librtlfmevent.c: In function ‘parse_rtl_fm_event’:
-src/librtlfmevent.c:61:22: warning: assignment to ‘int’ from ‘char *’ makes integer from pointer without a cast [-Wint-conversion]
-     event_type_start = event_type;
-                      ^
-src/librtlfmevent.c:70:28: warning: assignment to ‘char *’ from ‘int’ makes pointer from integer without a cast [-Wint-conversion]
-     rtl_fm_evt->event_type = event_type_start;
-                            ^
-src/librtlfmevent.c:74:18: warning: assignment to ‘int’ from ‘char *’ makes integer from pointer without a cast [-Wint-conversion]
-     buffer_start = buffer;
-                  ^
-src/librtlfmevent.c:83:12: warning: assignment to ‘char *’ from ‘int’ makes pointer from integer without a cast [-Wint-conversion]
-     buffer = buffer_start;
-            ^
-src/librtlfmevent.c:89:18: warning: assignment to ‘int’ from ‘char *’ makes integer from pointer without a cast [-Wint-conversion]
-     buffer_start = buffer;
-                  ^
-src/librtlfmevent.c:100:12: warning: assignment to ‘char *’ from ‘int’ makes pointer from integer without a cast [-Wint-conversion]
-     buffer = buffer_start;
-            ^
+src/frontend.c: In function ‘show_squelch_level’:
+src/frontend.c:238:40: warning: spurious trailing ‘%’ in format [-Wformat=]
+  238 |    mvwprintw(panel->wsquelch, 0,0, "%3d%", panel->sqlevel);
+      |                                        ^
 src/librtlfmevent.c: In function ‘update_rtl_fm_status’:
-src/librtlfmevent.c:108:34: warning: unused parameter ‘args’ [-Wunused-parameter]
- void *update_rtl_fm_status(void *args)
-                            ~~~~~~^~~~
+src/librtlfmevent.c:114:34: warning: unused parameter ‘args’ [-Wunused-parameter]
+  114 | void *update_rtl_fm_status(void *args)
+      |                            ~~~~~~^~~~
+src/libvoice.c: In function ‘build_speak_rec_mode’:
+src/libvoice.c:84:30: warning: ‘msg’ may be used uninitialized [-Wmaybe-uninitialized]
+   84 |     case(RECEIVE_MODE_AM):   strcat(msg, SPEECH_AM); break;
+      |                              ^~~~~~~~~~~~~~~~~~~~~~
+<built-in>: note: by argument 1 of type ‘const char *’ to ‘__builtin_strlen’ declared here
+src/libvoice.c:85:30: warning: ‘msg’ may be used uninitialized [-Wmaybe-uninitialized]
+   85 |     case(RECEIVE_MODE_WBFM): strcat(msg, SPEECH_WBFM); break;
+      |                              ^~~~~~~~~~~~~~~~~~~~~~~~
+<built-in>: note: by argument 1 of type ‘const char *’ to ‘__builtin_strlen’ declared here
+src/libvoice.c:86:30: warning: ‘msg’ may be used uninitialized [-Wmaybe-uninitialized]
+   86 |     case(RECEIVE_MODE_FM):   strcat(msg, SPEECH_FM); break;
+      |                              ^~~~~~~~~~~~~~~~~~~~~~
+<built-in>: note: by argument 1 of type ‘const char *’ to ‘__builtin_strlen’ declared here
+src/libvoice.c:87:30: warning: ‘msg’ may be used uninitialized [-Wmaybe-uninitialized]
+   87 |     case(RECEIVE_MODE_USB):  strcat(msg, SPEECH_USB); break;
+      |                              ^~~~~~~~~~~~~~~~~~~~~~~
+<built-in>: note: by argument 1 of type ‘const char *’ to ‘__builtin_strlen’ declared here
+src/libvoice.c:88:30: warning: ‘msg’ may be used uninitialized [-Wmaybe-uninitialized]
+   88 |     case(RECEIVE_MODE_LSB):  strcat(msg, SPEECH_LSB); break;
+      |                              ^~~~~~~~~~~~~~~~~~~~~~~
+<built-in>: note: by argument 1 of type ‘const char *’ to ‘__builtin_strlen’ declared here
+src/libvoice.c:89:14: warning: ‘msg’ may be used uninitialized [-Wmaybe-uninitialized]
+   89 |     default: strcat(msg, SPEECH_USB);
+      |              ^~~~~~~~~~~~~~~~~~~~~~~
+<built-in>: note: by argument 1 of type ‘const char *’ to ‘__builtin_strlen’ declared here

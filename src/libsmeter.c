@@ -112,7 +112,7 @@ void   update_smeter(Smeter *smeter)
 
   parse_smeter_level(smeter);
 
-  mvwprintw(smeter->wsmeter_rms, 0,0,"RMS:");
+  mvwprintw(smeter->wsmeter_rms, 0,0,"RMS:     ");
   wattron(smeter->wsmeter_rms, COLOR_PAIR(SMETER_L_COLOR));
   mvwprintw(smeter->wsmeter_rms, 0,4,"%3d", smeter->rms);
   wattroff(smeter->wsmeter_rms, COLOR_PAIR(SMETER_L_COLOR));
