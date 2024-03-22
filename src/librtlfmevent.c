@@ -48,6 +48,9 @@ void parse_rtl_fm_event(RtlFMEvent *rtl_fm_evt, char *event_data)
     char delimiter[] = "|";
     char *buffer = 0;
 
+    rtl_fm_evt->event_type = "";
+    rtl_fm_evt->event_value = 0;
+
     if (event_data == 0) {
 
       rtl_fm_evt->event_type = "";
@@ -111,7 +114,6 @@ void parse_rtl_fm_event(RtlFMEvent *rtl_fm_evt, char *event_data)
 void *update_rtl_fm_status(void *args)
 {
   char cmd_buffer[300] = {0},
-       cmd_del_buffer[300] = {0},
        buffer_cleaned[RTL_FM_EVT_PIPE_BUFFER_SIZE] = {0},
        buffer[RTL_FM_EVT_PIPE_BUFFER_SIZE] = {0};
   char *clean_buffer;
@@ -121,14 +123,6 @@ void *update_rtl_fm_status(void *args)
 
   strcat(cmd_buffer, "tail -n 1 ");
   strcat(cmd_buffer, rtl_fm_evt_file_path);
-
-  /**
-   * It's simple, but I think that could
-   * be a problem.
-   * */
-  strcat(cmd_del_buffer, "rm -f ");
-  strcat(cmd_del_buffer, rtl_fm_evt_file_path);
-  strcat(cmd_del_buffer, " > /dev/null");
   
   while(1)
   {
@@ -150,25 +144,20 @@ void *update_rtl_fm_status(void *args)
        i = 0;
        clean_buffer = buffer;
 
-
        for (i=0; i<RTL_FM_EVT_PIPE_BUFFER_SIZE; i++){
           if(buffer[i] == '\n')
-	     break;
+	        break;
           *clean_buffer=buffer[i]; 
           clean_buffer++;
         }
+
         *clean_buffer='\0';
         clean_buffer=buffer;
 
-  	parse_rtl_fm_event(last_rtl_fm_event, clean_buffer);
-    }
+  	    parse_rtl_fm_event(last_rtl_fm_event, clean_buffer);
+    } 
     pclose(pipe);
-    
-    if(clean_events_watchdog(last_rtl_fm_event) == 1)
-    {
-	system(cmd_del_buffer);
-        sleep_ms(1000);
-    }	
+  
 
     sleep_ms(RTL_FM_EVT_WAIT_MS);
   }

@@ -3,8 +3,8 @@ src/frontend.c:238:40: warning: spurious trailing ‘%’ in format [-Wformat=]
   238 |    mvwprintw(panel->wsquelch, 0,0, "%3d%", panel->sqlevel);
       |                                        ^
 src/librtlfmevent.c: In function ‘update_rtl_fm_status’:
-src/librtlfmevent.c:111:34: warning: unused parameter ‘args’ [-Wunused-parameter]
-  111 | void *update_rtl_fm_status(void *args)
+src/librtlfmevent.c:114:34: warning: unused parameter ‘args’ [-Wunused-parameter]
+  114 | void *update_rtl_fm_status(void *args)
       |                            ~~~~~~^~~~
 src/libvoice.c: In function ‘build_speak_rec_mode’:
 src/libvoice.c:84:30: warning: ‘msg’ may be used uninitialized [-Wmaybe-uninitialized]

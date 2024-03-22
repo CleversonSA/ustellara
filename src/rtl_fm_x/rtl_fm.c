@@ -85,7 +85,7 @@
 #define BUFFER_DUMP			4096
 
 #define FREQUENCIES_LIMIT		100000
-#define LOG_EVENT_WATCHDOG_MS		200
+#define LOG_EVENT_WATCHDOG_MS		10
 
 static volatile int do_exit = 0;
 static int lcm_post[17] = {1,1,1,3,1,5,3,7,1,9,5,11,3,13,7,15,1};
@@ -353,19 +353,9 @@ void lprintevtf(struct event_file_log *eflog, char *evt_type, char *evt_data)
 {
 	if(eflog->is_log_enabled == 1 && log_event_watchdog(eflog) == 1)
 	{
-		eflog->logfile = fopen(eflog->log_file_full_path,"a");
-		if(eflog->logfile == NULL)
-		{
-			fprintf(stderr, "Invalid log file path");
-			eflog->is_log_enabled = 0;
-		} 
-		else
-		{
-			fprintf(stderr,"[%d] %s|%s\n",(int)eflog->last_millis, evt_type,evt_data);
-			fprintf(eflog->logfile, "%s|%s\n",evt_type, evt_data);
-			fclose(eflog->logfile);
-
-		}
+		fprintf(stderr,"[%d] %s|%s\n",(int)eflog->last_millis, evt_type,evt_data);
+		fprintf(eflog->logfile, "%s|%s\n",evt_type, evt_data);
+		fflush(eflog->logfile);
 	}
 }
 
@@ -869,7 +859,8 @@ void full_demod(struct demod_state *d)
 
 		} else if(d->squelch_timeout > 0 && squelch_watchdog(d) == 1 && (d->squelch_hits < d->conseq_squelch)) {
 			d->squelch_hits = d->conseq_squelch + 1;
-		
+			log_full_demod(&evt_flog,"sql",sr,&dongle);
+
 		} else {
 			d->squelch_hits = 0;
 			log_full_demod(&evt_flog,"sql_hit",sr,&dongle);
@@ -1199,6 +1190,13 @@ int main(int argc, char **argv)
 		case 'e':
 			evt_flog.log_file_full_path = optarg;
 			evt_flog.is_log_enabled=1;
+			evt_flog.logfile = fopen(evt_flog.log_file_full_path,"a");
+			if(evt_flog.logfile == NULL)
+			{
+				fprintf(stderr, "Invalid log file path");
+				evt_flog.is_log_enabled = 0;
+			}
+
 			break;
 		case 'd':
 			dongle.dev_index = verbose_device_search(optarg);

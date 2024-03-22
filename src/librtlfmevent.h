@@ -21,7 +21,7 @@ typedef struct RtlFMEventSt
  * *************************************/
 #define RTL_FM_EVT_WAIT_MS	    200
 #define RTL_FM_CLEAN_EVENT_WATCHDOG_MS 60000
-#define RTL_FM_EVT_PIPE_BUFFER_SIZE 32
+#define RTL_FM_EVT_PIPE_BUFFER_SIZE 128
 RtlFMEvent *last_rtl_fm_event;
 char       rtl_fm_evt_file_path[255];
 pthread_t  rtl_fm_evt_listener;

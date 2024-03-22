@@ -171,7 +171,7 @@ void set_squelch_level(ReceiverPanel *panel)
  
   nodelay(stdscr, FALSE);
   echo(); 
-  mvprintw(panel->yinput, panel->xinput, "Set squelch level (0-200): ");
+  mvprintw(panel->yinput, panel->xinput, "Set squelch level (0-1000): ");
   refresh();
   r = scanw("%d", &sql);
   nodelay(stdscr, TRUE);
@@ -180,7 +180,7 @@ void set_squelch_level(ReceiverPanel *panel)
   for(i=0; i<panel->maxx; i++)
     mvprintw(panel->yinput, i, " ");
   
-  if(sql< 0 || sql > 200 || r != 1) {
+  if(sql< 0 || sql > 1000 || r != 1) {
     mvprintw(panel->yinput, panel->xinput, "** INVALID SQUELCH LEVEL ***");
     getch();
     for(i=0; i<panel->maxx; i++)
